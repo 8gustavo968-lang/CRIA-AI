@@ -27,7 +27,7 @@
     (async function () {
       const boot = document.getElementById('boot');
       try {
-        const res = await fetch('./cria-github.zip');
+        const res = await fetch('./cria-github.zip?v=3');
         if (!res.ok) throw new Error('zip ' + res.status);
         const zip = await JSZip.loadAsync(await res.arrayBuffer());
         const file = zip.file('cria-github/index.html');
@@ -43,13 +43,19 @@
         }
         const end = html.lastIndexOf('</script>');
         const code = html.slice(start, end).trim();
-        if (!code || code.length < 100) throw new Error('codigo vazio');
-        const transformed = Babel.transform(code, { presets: ['react'] }).code;
+        if (!code || code.length < 100) throw new Error('codigo vazio: ' + code.length);
+
         const s = document.createElement('script');
-        s.textContent = transformed;
+        s.type = 'text/babel';
+        s.setAttribute('data-presets', 'react');
+        s.textContent = code;
         document.body.appendChild(s);
+
+        if (typeof Babel !== 'undefined' && Babel.transformScriptTags) {
+          Babel.transformScriptTags();
+        }
       } catch (err) {
-        if (boot) boot.textContent = 'Erro ao carregar. Recarregue a pagina.';
+        if (boot) boot.textContent = 'Erro: ' + (err && err.message ? err.message : err);
         console.error(err);
       }
     })();
