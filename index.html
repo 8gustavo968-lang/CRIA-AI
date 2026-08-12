@@ -2,51 +2,57 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"/>
 <meta name="theme-color" content="#0F1320"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<link rel="manifest" href="manifest.json"/>
 <title>Cria</title>
-<style>body{margin:0;background:#0F1320;color:#F2B705;font-family:system-ui;padding:20px}pre{white-space:pre-wrap;word-break:break-all;color:#aaa;font-size:12px}</style>
+<style>
+*{box-sizing:border-box}html,body,#root{margin:0;padding:0;height:100%;width:100%}
+body{background:#0F1320;color:#EDEFF5;font-family:system-ui,sans-serif}
+#boot{display:flex;align-items:center;justify-content:center;height:100vh;color:#F2B705;font-size:18px}
+</style>
 <script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone@7.26.0/babel.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
 <body>
-<div id="root">Carregando…</div>
+<div id="root"><div id="boot">✦ Carregando Cria…</div></div>
 <script>
 (async function(){
-  const root=document.getElementById('root');
+  var boot=document.getElementById('boot');
   try{
-    const res=await fetch('./cria-github.zip?v=9');
-    const zip=await JSZip.loadAsync(await res.arrayBuffer());
-    const names=Object.keys(zip.files);
-    const file=zip.file('cria-github/index.html');
-    const html=await file.async('string');
-    const marker='data-presets="react">';
-    let start=html.indexOf(marker);
-    if(start<0) throw new Error('marker not found');
+    if('serviceWorker' in navigator){
+      var regs=await navigator.serviceWorker.getRegistrations();
+      for(var i=0;i<regs.length;i++) await regs[i].unregister();
+      if(window.caches){
+        var ks=await caches.keys();
+        await Promise.all(ks.map(function(k){return caches.delete(k);}));
+      }
+    }
+    var res=await fetch('./cria-github.zip?v=10');
+    if(!res.ok) throw new Error('zip '+res.status);
+    var zip=await JSZip.loadAsync(await res.arrayBuffer());
+    var file=zip.file('cria-github/index.html');
+    if(!file) throw new Error('index nao encontrado no zip');
+    var html=await file.async('string');
+    var marker='data-presets="react">';
+    var start=html.indexOf(marker);
+    if(start<0) throw new Error('script babel nao encontrado');
     start+=marker.length;
-    const end=html.lastIndexOf('</script>');
-    const code=html.slice(start,end).trim();
-    root.innerHTML='code len='+code.length+'<br>start='+JSON.stringify(code.slice(0,80))+'<br>end='+JSON.stringify(code.slice(-80));
-    let out;
-    try{
-      out=Babel.transform(code,{presets:[['react',{runtime:'classic'}]],filename:'c.jsx'}).code;
-    }catch(be){
-      root.innerHTML+='<br>BABEL: '+be.message;
-      throw be;
-    }
-    root.innerHTML+='<br>out len='+out.length;
-    try{
-      (0,eval)(out);
-      root.innerHTML+='<br>eval OK';
-    }catch(ee){
-      root.innerHTML+='<br>EVAL: '+ee.message;
-      throw ee;
-    }
+    var closeTag='</scr'+'ipt>';
+    var end=html.lastIndexOf(closeTag);
+    var code=html.slice(start,end).trim();
+    if(code.length<100) throw new Error('codigo curto: '+code.length);
+    var out=Babel.transform(code,{
+      presets:[['react',{runtime:'classic'}]],
+      filename:'cria.jsx'
+    }).code;
+    (0,eval)(out);
   }catch(err){
     console.error(err);
-    root.innerHTML+=(root.innerHTML?'<br>':'')+'ERR: '+(err.message||err);
+    if(boot) boot.textContent='Erro: '+(err&&err.message?err.message:String(err));
   }
 })();
 </script>
