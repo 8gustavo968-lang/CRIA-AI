@@ -8,17 +8,14 @@
 <link rel="manifest" href="manifest.json"/>
 <title>Cria</title>
 <style>
-*{box-sizing:border-box}html,body,#root{margin:0;padding:0;height:100%;width:100%}
-body{background:#0F1320;color:#EDEFF5;font-family:system-ui,sans-serif}
-#boot{display:flex;align-items:center;justify-content:center;height:100vh;color:#F2B705;font-size:18px}
+html,body{margin:0;padding:0;height:100%;background:#0F1320;overflow:hidden}
+#boot{display:flex;align-items:center;justify-content:center;height:100vh;color:#F2B705;font-family:system-ui;font-size:18px}
+iframe{border:0;width:100%;height:100%;position:fixed;inset:0}
 </style>
-<script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
-<script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone@7.26.0/babel.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
 <body>
-<div id="root"><div id="boot">✦ Carregando Cria…</div></div>
+<div id="boot">✦ Carregando Cria…</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script>
 (async function(){
   var boot=document.getElementById('boot');
@@ -31,27 +28,18 @@ body{background:#0F1320;color:#EDEFF5;font-family:system-ui,sans-serif}
         await Promise.all(ks.map(function(k){return caches.delete(k);}));
       }
     }
-    var res=await fetch('./cria-github.zip?v=13');
+    var res=await fetch('./cria-github.zip?v=14');
     if(!res.ok) throw new Error('zip '+res.status);
     var zip=await JSZip.loadAsync(await res.arrayBuffer());
     var file=zip.file('cria-github/index.html');
-    if(!file) throw new Error('index nao encontrado no zip');
+    if(!file) throw new Error('index nao encontrado');
     var html=await file.async('string');
-    var marker='data-presets="react">';
-    var start=html.indexOf(marker);
-    if(start<0) throw new Error('script babel nao encontrado');
-    start+=marker.length;
-    var closeTag='</scr'+'ipt>';
-    var end=html.lastIndexOf(closeTag);
-    var code=html.slice(start,end).trim();
-    if(code.length<100) throw new Error('codigo curto: '+code.length);
-
-    var s=document.createElement('script');
-    s.type='text/babel';
-    s.setAttribute('data-presets','react');
-    s.textContent=code;
-    document.body.appendChild(s);
-    if(Babel.transformScriptTags) Babel.transformScriptTags();
+    var iframe=document.createElement('iframe');
+    iframe.setAttribute('allow','microphone; camera; autoplay; clipboard-write');
+    iframe.title='Cria';
+    iframe.srcdoc=html;
+    iframe.onload=function(){ if(boot) boot.remove(); };
+    document.body.appendChild(iframe);
   }catch(err){
     console.error(err);
     if(boot) boot.textContent='Erro: '+(err&&err.message?err.message:String(err));
