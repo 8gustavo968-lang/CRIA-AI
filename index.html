@@ -5,55 +5,40 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#0F1320" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Cria" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icon-192.svg" />
   <title>Cria</title>
   <style>
-    * { box-sizing: border-box; }
-    html, body, #root { margin: 0; padding: 0; min-height: 100%; width: 100%; height: 100%; }
-    body { background: #0F1320; color: #EDEFF5; font-family: system-ui, sans-serif; overscroll-behavior: none; }
-    #boot { display:flex; align-items:center; justify-content:center; height:100vh; color:#F2B705; font-size:18px; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; height: 100%; background: #0F1320; overflow: hidden; }
+    #boot { display:flex; align-items:center; justify-content:center; height:100vh; color:#F2B705; font-size:18px; font-family: system-ui, sans-serif; }
+    iframe { border: 0; width: 100%; height: 100%; position: fixed; inset: 0; }
   </style>
-  <script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone@7.26.0/babel.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
 <body>
-  <div id="root"><div id="boot">✦ Carregando Cria…</div></div>
+  <div id="boot">✦ Carregando Cria…</div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script>
     (async function () {
       const boot = document.getElementById('boot');
       try {
-        const res = await fetch('./cria-github.zip?v=3');
+        const res = await fetch('./cria-github.zip?v=5');
         if (!res.ok) throw new Error('zip ' + res.status);
         const zip = await JSZip.loadAsync(await res.arrayBuffer());
         const file = zip.file('cria-github/index.html');
-        if (!file) throw new Error('index.html nao encontrado no zip');
-        const html = await file.async('string');
-        const marker = 'data-presets="react">';
-        let start = html.indexOf(marker);
-        if (start < 0) {
-          start = html.indexOf('type="text/babel"');
-          start = html.indexOf('>', start) + 1;
-        } else {
-          start = start + marker.length;
-        }
-        const end = html.lastIndexOf('</script>');
-        const code = html.slice(start, end).trim();
-        if (!code || code.length < 100) throw new Error('codigo vazio: ' + code.length);
-
-        const s = document.createElement('script');
-        s.type = 'text/babel';
-        s.setAttribute('data-presets', 'react');
-        s.textContent = code;
-        document.body.appendChild(s);
-
-        if (typeof Babel !== 'undefined' && Babel.transformScriptTags) {
-          Babel.transformScriptTags();
-        }
+        if (!file) throw new Error('index.html nao encontrado');
+        let html = await file.async('string');
+        // Fix relative paths for service worker / manifest inside blob iframe
+        html = html.replace('href="manifest.json"', 'href="' + location.origin + location.pathname.replace(/\/[^/]*$/, '/') + 'manifest.json"');
+        html = html.replace('./sw.js', location.origin + location.pathname.replace(/\/[^/]*$/, '/') + 'sw.js');
+        const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const iframe = document.createElement('iframe');
+        iframe.src = url;
+        iframe.title = 'Cria';
+        iframe.onload = function () { if (boot) boot.remove(); };
+        document.body.appendChild(iframe);
       } catch (err) {
         if (boot) boot.textContent = 'Erro: ' + (err && err.message ? err.message : err);
         console.error(err);
