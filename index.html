@@ -5,35 +5,38 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#0F1320" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Cria" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icon-192.svg" />
   <title>Cria</title>
   <style>
     * { box-sizing: border-box; }
-    html, body, #root { margin: 0; padding: 0; min-height: 100%; width: 100%; height: 100%; }
-    body { background: #0F1320; color: #EDEFF5; font-family: system-ui, sans-serif; }
-    #loading { display:flex; align-items:center; justify-content:center; height:100vh; color:#F2B705; font-size:18px; }
+    html, body { margin: 0; padding: 0; min-height: 100%; background: #0F1320; color: #EDEFF5; font-family: system-ui, sans-serif; }
+    #boot { display:flex; align-items:center; justify-content:center; height:100vh; color:#F2B705; font-size:18px; }
   </style>
-  <script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone@7.26.0/babel.min.js"></script>
 </head>
 <body>
-  <div id="root"><div id="loading">✦ Carregando Cria…</div></div>
+  <div id="boot">✦ Carregando Cria…</div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script>
-    Promise.all([1,2,3,4].map(i => fetch('./p'+i+'.txt').then(r => r.text())))
-      .then(parts => {
-        const code = parts.join('');
-        const transformed = Babel.transform(code, { presets: ['react'] }).code;
-        const script = document.createElement('script');
-        script.textContent = transformed;
-        document.body.appendChild(script);
-      })
-      .catch(err => {
-        document.getElementById('root').innerHTML = '<div id="loading">Erro ao carregar. Recarregue.</div>';
+    (async function () {
+      try {
+        const res = await fetch('./cria-github.zip');
+        if (!res.ok) throw new Error('zip ' + res.status);
+        const buf = await res.arrayBuffer();
+        const zip = await JSZip.loadAsync(buf);
+        const file = zip.file('cria-github/index.html');
+        if (!file) throw new Error('index.html nao encontrado no zip');
+        const html = await file.async('string');
+        document.open();
+        document.write(html);
+        document.close();
+      } catch (err) {
+        document.getElementById('boot').textContent = 'Erro ao carregar. Recarregue a pagina.';
         console.error(err);
-      });
+      }
+    })();
   </script>
 </body>
 </html>
