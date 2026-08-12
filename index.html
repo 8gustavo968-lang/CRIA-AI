@@ -31,7 +31,7 @@ body{background:#0F1320;color:#EDEFF5;font-family:system-ui,sans-serif}
         await Promise.all(ks.map(function(k){return caches.delete(k);}));
       }
     }
-    var res=await fetch('./cria-github.zip?v=10');
+    var res=await fetch('./cria-github.zip?v=13');
     if(!res.ok) throw new Error('zip '+res.status);
     var zip=await JSZip.loadAsync(await res.arrayBuffer());
     var file=zip.file('cria-github/index.html');
@@ -45,11 +45,13 @@ body{background:#0F1320;color:#EDEFF5;font-family:system-ui,sans-serif}
     var end=html.lastIndexOf(closeTag);
     var code=html.slice(start,end).trim();
     if(code.length<100) throw new Error('codigo curto: '+code.length);
-    var out=Babel.transform(code,{
-      presets:[['react',{runtime:'classic'}]],
-      filename:'cria.jsx'
-    }).code;
-    (0,eval)(out);
+
+    var s=document.createElement('script');
+    s.type='text/babel';
+    s.setAttribute('data-presets','react');
+    s.textContent=code;
+    document.body.appendChild(s);
+    if(Babel.transformScriptTags) Babel.transformScriptTags();
   }catch(err){
     console.error(err);
     if(boot) boot.textContent='Erro: '+(err&&err.message?err.message:String(err));
