@@ -1,5 +1,4 @@
 window.CRIA_PATCH_PERSONA = function(html) {
-  // always re-apply latest persona
   function replaceStringConst(html, name, newValue) {
     var start = html.indexOf(name);
     if (start < 0) return html;
@@ -15,7 +14,6 @@ window.CRIA_PATCH_PERSONA = function(html) {
     return html.slice(0, start) + replacement + html.slice(end);
   }
 
-  // strip old marker versions so we can update
   html = html.replace(/CRIA_PERSONA_V\d+\s*/g, '');
 
   var base =
@@ -33,5 +31,12 @@ window.CRIA_PATCH_PERSONA = function(html) {
 
   html = replaceStringConst(html, 'BASE_SYSTEM_PROMPT', base);
   html = replaceStringConst(html, 'VOICE_SYSTEM_ADDENDUM', voice);
+
+  // Put less-censored providers first; Claude last (very filtered)
+  html = html.replace(
+    /const FALLBACK_ORDER = \[[^\]]+\];/,
+    'const FALLBACK_ORDER = ["openai", "mistral", "groq", "cerebras", "deepseek", "openrouter", "gemini", "claude"];'
+  );
+
   return html;
 };
