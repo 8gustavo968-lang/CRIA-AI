@@ -16,7 +16,7 @@ iframe{border:0;width:100%;height:100%;position:fixed;inset:0}
 <body>
 <div id="boot">✦ Carregando Cria…</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/8gustavo968-lang/CRIA-AI@main/patch.js"></script>
+<script src="./patch.js?v=2"></script>
 <script>
 (async function(){
   var boot=document.getElementById('boot');
@@ -29,7 +29,7 @@ iframe{border:0;width:100%;height:100%;position:fixed;inset:0}
         await Promise.all(ks.map(function(k){return caches.delete(k);}));
       }
     }
-    var res=await fetch('./cria-github.zip?v=20');
+    var res=await fetch('./cria-github.zip?v=21');
     if(!res.ok) throw new Error('zip '+res.status);
     var zip=await JSZip.loadAsync(await res.arrayBuffer());
     var file=zip.file('cria-github/index.html');
