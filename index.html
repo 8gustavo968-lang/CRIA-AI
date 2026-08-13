@@ -19,7 +19,7 @@ iframe{border:0;width:100%;height:100%;position:fixed;inset:0}
 <script src="./patch.js?v=4"></script>
 <script src="./patch-openai.js?v=2"></script>
 <script src="./patch-persona.js?v=8"></script>
-<script src="./patch-files.js?v=1"></script>
+<script src="./patch-files.js?v=2"></script>
 <script>
 (async function(){
   var boot=document.getElementById('boot');
@@ -32,7 +32,7 @@ iframe{border:0;width:100%;height:100%;position:fixed;inset:0}
         await Promise.all(ks.map(function(k){return caches.delete(k);}));
       }
     }
-    var res=await fetch('./cria-github.zip?v=30');
+    var res=await fetch('./cria-github.zip?v=31');
     if(!res.ok) throw new Error('zip '+res.status);
     var zip=await JSZip.loadAsync(await res.arrayBuffer());
     var file=zip.file('cria-github/index.html');

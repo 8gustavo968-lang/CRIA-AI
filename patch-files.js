@@ -1,11 +1,8 @@
 window.CRIA_PATCH_FILES = function(html) {
   if (html.indexOf('CRIA_FILES_V1') >= 0) return html;
 
-  var oldCall = 'async function callOpenAICompatible({ url, key, model, extraHeaders, history, systemPrompt }) {\n    const response = await fetch(url, {\n      method: "POST",\n      headers: {\n        "Content-Type": "application/json",\n        Authorization: `Bearer ${key}`,\n        ...(extraHeaders || {}),
-      },\n      body: JSON.stringify({\n        model,\n        messages: [{ role: "system", content: systemPrompt }, ...history.map((m) => ({ role: m.role, content: m.text }))],\n      }),\n    });';
-
-  var newCall = 'async function callOpenAICompatible({ url, key, model, extraHeaders, history, systemPrompt, image }) {\n    /* CRIA_FILES_V1 */\n    const messages = [{ role: "system", content: systemPrompt }];\n    history.forEach((m, i) => {\n      const isLast = i === history.length - 1;\n      if (isLast && image && m.role === "user") {\n        messages.push({\n          role: "user",\n          content: [\n            { type: "text", text: m.text || "Analise esta imagem com atencao e descreva o que voce ve." },\n            { type: "image_url", image_url: { url: "data:" + image.mime + ";base64," + image.data } },\n          ],\n        });\n      } else {\n        messages.push({ role: m.role, content: m.text });\n      }\n    });\n    const response = await fetch(url, {\n      method: "POST",\n      headers: {\n        "Content-Type": "application/json",\n        Authorization: `Bearer ${key}`,\n        ...(extraHeaders || {}),
-      },\n      body: JSON.stringify({ model, messages }),\n    });';
+  var oldCall = 'async function callOpenAICompatible({ url, key, model, extraHeaders, history, systemPrompt }) {\n    const response = await fetch(url, {\n      method: "POST",\n      headers: {\n        "Content-Type": "application/json",\n        Authorization: `Bearer ${key}`,\n        ...(extraHeaders || {}),\n      },\n      body: JSON.stringify({\n        model,\n        messages: [{ role: "system", content: systemPrompt }, ...history.map((m) => ({ role: m.role, content: m.text }))],\n      }),\n    });';
+  var newCall = 'async function callOpenAICompatible({ url, key, model, extraHeaders, history, systemPrompt, image }) {\n    /* CRIA_FILES_V1 */\n    const messages = [{ role: "system", content: systemPrompt }];\n    history.forEach((m, i) => {\n      const isLast = i === history.length - 1;\n      if (isLast && image && m.role === "user") {\n        messages.push({\n          role: "user",\n          content: [\n            { type: "text", text: m.text || "Analise esta imagem com atencao e descreva o que voce ve." },\n            { type: "image_url", image_url: { url: "data:" + image.mime + ";base64," + image.data } },\n          ],\n        });\n      } else {\n        messages.push({ role: m.role, content: m.text });\n      }\n    });\n    const response = await fetch(url, {\n      method: "POST",\n      headers: {\n        "Content-Type": "application/json",\n        Authorization: `Bearer ${key}`,\n        ...(extraHeaders || {}),\n      },\n      body: JSON.stringify({ model, messages }),\n    });';
 
   if (html.indexOf(oldCall) >= 0) {
     html = html.replace(oldCall, newCall);
@@ -15,7 +12,7 @@ window.CRIA_PATCH_FILES = function(html) {
     /callOpenAICompatible\(\{([^}]*?)systemPrompt,\n(\s*)\}\)/g,
     function(match, mid, sp) {
       if (mid.indexOf('image') >= 0) return match;
-      return 'callOpenAICompatible({' + mid + 'systemPrompt,\n' + sp + 'image,\n' + sp + '}';
+      return 'callOpenAICompatible({' + mid + 'systemPrompt,\n' + sp + 'image,\n' + sp + '})';
     }
   );
 
