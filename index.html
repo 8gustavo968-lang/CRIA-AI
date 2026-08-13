@@ -18,8 +18,7 @@ iframe{border:0;width:100%;height:100%;position:fixed;inset:0}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="./patch.js?v=4"></script>
 <script src="./patch-openai.js?v=2"></script>
-<script src="./patch-persona.js?v=9"></script>
-<script src="./patch-files.js?v=3"></script>
+<script src="./patch-tone.js?v=1"></script>
 <script>
 (async function(){
   var boot=document.getElementById('boot');
@@ -32,7 +31,7 @@ iframe{border:0;width:100%;height:100%;position:fixed;inset:0}
         await Promise.all(ks.map(function(k){return caches.delete(k);}));
       }
     }
-    var res=await fetch('./cria-github.zip?v=33');
+    var res=await fetch('./cria-github.zip?v=24');
     if(!res.ok) throw new Error('zip '+res.status);
     var zip=await JSZip.loadAsync(await res.arrayBuffer());
     var file=zip.file('cria-github/index.html');
@@ -40,8 +39,7 @@ iframe{border:0;width:100%;height:100%;position:fixed;inset:0}
     var html=await file.async('string');
     if(window.CRIA_PATCH) html=window.CRIA_PATCH(html);
     if(window.CRIA_PATCH_OPENAI) html=window.CRIA_PATCH_OPENAI(html);
-    if(window.CRIA_PATCH_PERSONA) html=window.CRIA_PATCH_PERSONA(html);
-    if(window.CRIA_PATCH_FILES) html=window.CRIA_PATCH_FILES(html);
+    if(window.CRIA_PATCH_TONE) html=window.CRIA_PATCH_TONE(html);
     var iframe=document.createElement('iframe');
     iframe.setAttribute('allow','microphone; camera; autoplay; clipboard-write');
     iframe.title='Cria';
