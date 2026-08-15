@@ -9,49 +9,80 @@
 <title>Cria</title>
 <style>
 html,body{margin:0;padding:0;height:100%;background:#0F1320;overflow:hidden}
-#boot{display:flex;align-items:center;justify-content:center;height:100vh;color:#F2B705;font-family:system-ui;font-size:18px}
+#boot{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;color:#F2B705;font-family:system-ui;font-size:16px;padding:24px;text-align:center;gap:12px}
+#boot .msg{color:#9AA3B8;font-size:13px;max-width:320px;word-break:break-word}
+#boot .err{color:#ff6b6b;font-size:13px;max-width:340px;word-break:break-word}
 iframe{border:0;width:100%;height:100%;position:fixed;inset:0}
 </style>
 </head>
 <body>
-<div id="boot">✦ Carregando Cria…</div>
+<div id="boot">
+  <div>✦ Carregando Cria…</div>
+  <div class="msg" id="status">iniciando</div>
+</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="./patch.js?v=10"></script>
-<script src="./patch-openai.js?v=3"></script>
-<script src="./patch-tone.js?v=4"></script>
-<script src="./patch-persona.js?v=12"></script>
+<script src="./patch.js?v=20"></script>
+<script src="./patch-openai.js?v=20"></script>
+<script src="./patch-tone.js?v=20"></script>
+<script src="./patch-persona.js?v=20"></script>
 <script>
-(async function(){
-  var boot=document.getElementById('boot');
-  try{
-    if('serviceWorker' in navigator){
-      var regs=await navigator.serviceWorker.getRegistrations();
-      for(var i=0;i<regs.length;i++) await regs[i].unregister();
-      if(window.caches){
-        var ks=await caches.keys();
-        await Promise.all(ks.map(function(k){return caches.delete(k);}));
-      }
-    }
-    var res=await fetch('./cria-github.zip?v=30');
-    if(!res.ok) throw new Error('zip '+res.status);
-    var zip=await JSZip.loadAsync(await res.arrayBuffer());
-    var file=zip.file('cria-github/index.html');
-    if(!file) throw new Error('index nao encontrado');
-    var html=await file.async('string');
-    if(window.CRIA_PATCH) html=window.CRIA_PATCH(html);
-    if(window.CRIA_PATCH_OPENAI) html=window.CRIA_PATCH_OPENAI(html);
-    if(window.CRIA_PATCH_TONE) html=window.CRIA_PATCH_TONE(html);
-    if(window.CRIA_PATCH_PERSONA) html=window.CRIA_PATCH_PERSONA(html);
-    var iframe=document.createElement('iframe');
-    iframe.setAttribute('allow','microphone; camera; autoplay; clipboard-write');
-    iframe.title='Cria';
-    iframe.srcdoc=html;
-    iframe.onload=function(){ if(boot) boot.remove(); };
-    document.body.appendChild(iframe);
-  }catch(err){
+(function(){
+  var boot = document.getElementById('boot');
+  var status = document.getElementById('status');
+  function setStatus(t){ if(status) status.textContent = t; }
+  function fail(err){
     console.error(err);
-    if(boot) boot.textContent='Erro: '+(err&&err.message?err.message:String(err));
+    var msg = (err && err.message) ? err.message : String(err);
+    if(boot){
+      boot.innerHTML = '<div>✦ Erro ao carregar</div><div class="err">'+msg+'</div><div class="msg">Tenta limpar o cache ou abrir em aba anônima.</div>';
+    }
   }
+  (async function(){
+    try{
+      setStatus('limpando cache…');
+      try{
+        if('serviceWorker' in navigator){
+          var regs = await navigator.serviceWorker.getRegistrations();
+          for(var i=0;i<regs.length;i++) await regs[i].unregister();
+        }
+        if(window.caches){
+          var ks = await caches.keys();
+          await Promise.all(ks.map(function(k){ return caches.delete(k); }));
+        }
+      }catch(e){ console.warn('cache clean', e); }
+
+      setStatus('baixando app…');
+      var res = await fetch('./cria-github.zip?v=40');
+      if(!res.ok) throw new Error('zip HTTP '+res.status);
+      var buf = await res.arrayBuffer();
+
+      setStatus('abrindo arquivos…');
+      if(typeof JSZip === 'undefined') throw new Error('JSZip não carregou');
+      var zip = await JSZip.loadAsync(buf);
+      var file = zip.file('cria-github/index.html');
+      if(!file) throw new Error('index não encontrado no zip');
+      var html = await file.async('string');
+
+      setStatus('aplicando melhorias…');
+      try{ if(window.CRIA_PATCH) html = window.CRIA_PATCH(html); }catch(e){ console.warn('patch', e); }
+      try{ if(window.CRIA_PATCH_OPENAI) html = window.CRIA_PATCH_OPENAI(html); }catch(e){ console.warn('openai', e); }
+      try{ if(window.CRIA_PATCH_TONE) html = window.CRIA_PATCH_TONE(html); }catch(e){ console.warn('tone', e); }
+      try{ if(window.CRIA_PATCH_PERSONA) html = window.CRIA_PATCH_PERSONA(html); }catch(e){ console.warn('persona', e); }
+
+      setStatus('abrindo Cria…');
+      var iframe = document.createElement('iframe');
+      iframe.setAttribute('allow','microphone; camera; autoplay; clipboard-write');
+      iframe.title = 'Cria';
+      iframe.srcdoc = html;
+      iframe.onload = function(){ if(boot) boot.remove(); };
+      document.body.appendChild(iframe);
+
+      // fallback se onload não disparar
+      setTimeout(function(){ if(boot && boot.parentNode) boot.remove(); }, 8000);
+    }catch(err){
+      fail(err);
+    }
+  })();
 })();
 </script>
 </body>
