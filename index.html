@@ -18,7 +18,8 @@ iframe{border:0;width:100%;height:100%;position:fixed;inset:0}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="./patch.js?v=4"></script>
 <script src="./patch-openai.js?v=2"></script>
-<script src="./patch-tone.js?v=1"></script>
+<script src="./patch-tone.js?v=2"></script>
+<script src="./patch-persona.js?v=7"></script>
 <script>
 (async function(){
   var boot=document.getElementById('boot');
@@ -40,6 +41,7 @@ iframe{border:0;width:100%;height:100%;position:fixed;inset:0}
     if(window.CRIA_PATCH) html=window.CRIA_PATCH(html);
     if(window.CRIA_PATCH_OPENAI) html=window.CRIA_PATCH_OPENAI(html);
     if(window.CRIA_PATCH_TONE) html=window.CRIA_PATCH_TONE(html);
+    if(window.CRIA_PATCH_PERSONA) html=window.CRIA_PATCH_PERSONA(html);
     var iframe=document.createElement('iframe');
     iframe.setAttribute('allow','microphone; camera; autoplay; clipboard-write');
     iframe.title='Cria';
