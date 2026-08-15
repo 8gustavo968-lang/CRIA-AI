@@ -1,9 +1,23 @@
 window.CRIA_PATCH = function(html) {
-  if (html.indexOf('msgActions') >= 0) return html;
+  if (html.indexOf('msgActions') >= 0 && html.indexOf('splitReply') >= 0) return html;
 
+  // --- Multi-message support ---
+  // Substitui o trecho que adiciona a resposta única por um que divide por ||| e envia com delay
+  html = html.replace(
+    "const replyText = await askCria(nextMessages, { voice: false, image: image || null });\n      const finalMessages = [...nextMessages, { role: \"assistant\", text: replyText || \"Não consegui gerar uma resposta agora. Tenta de novo.\" }];\n      setMessages(finalMessages);\n      userTurnCountRef.current += 1;\n      if (userTurnCountRef.current % 3 === 0) updateProfile(finalMessages);",
+    "const replyText = await askCria(nextMessages, { voice: false, image: image || null });\n      const parts = (replyText || \"Não consegui gerar uma resposta agora. Tenta de novo.\").split(\"|||\").map(p => p.trim()).filter(Boolean);\n      let current = [...nextMessages];\n      for (let i = 0; i < parts.length; i++) {\n        current = [...current, { role: \"assistant\", text: parts[i] }];\n        setMessages(current);\n        if (i < parts.length - 1) await new Promise(r => setTimeout(r, 600 + Math.random() * 500));\n      }\n      userTurnCountRef.current += 1;\n      if (userTurnCountRef.current % 3 === 0) updateProfile(current);"
+  );
+
+  // Também no resendFromEdit (se existir)
+  html = html.replace(
+    "const replyText = await askCria(nextMessages, { voice: false, image: null });\n      setMessages([...nextMessages, { role: \"assistant\", text: replyText || \"Nao consegui gerar uma resposta agora.\" }]);",
+    "const replyText = await askCria(nextMessages, { voice: false, image: null });\n      const parts = (replyText || \"Nao consegui gerar uma resposta agora.\").split(\"|||\").map(p => p.trim()).filter(Boolean);\n      let current = [...nextMessages];\n      for (let i = 0; i < parts.length; i++) {\n        current = [...current, { role: \"assistant\", text: parts[i] }];\n        setMessages(current);\n        if (i < parts.length - 1) await new Promise(r => setTimeout(r, 600 + Math.random() * 500));\n      }"
+  );
+
+  // --- Rest of original patch (msgActions, edit, attach, etc.) ---
   html = html.replace(
     "async function sendMessage(image) {\n    const text = input.trim();\n    if (!text || loading) return;\n\n    const nextMessages = [...messages, { role: \"user\", text }];",
-    "async function resendFromEdit(editIndex, newText) {\n    if (!newText.trim() || loading) return;\n    const truncated = messages.slice(0, editIndex);\n    const nextMessages = [...truncated, { role: \"user\", text: newText.trim() }];\n    setMessages(nextMessages);\n    setLoading(true);\n    try {\n      const replyText = await askCria(nextMessages, { voice: false, image: null });\n      setMessages([...nextMessages, { role: \"assistant\", text: replyText || \"Nao consegui gerar uma resposta agora.\" }]);\n    } catch (err) {\n      setMessages((prev) => [...prev, { role: \"assistant\", text: \"Deu um problema. Tenta de novo.\" }]);\n    } finally { setLoading(false); }\n  }\n  async function sendMessage(image, overrideText) {\n    const text = (overrideText !== undefined ? overrideText : input).trim();\n    if ((!text && !image) || loading) return;\n    const displayText = text || (image ? \"[imagem]\" : \"\");\n    const nextMessages = [...messages, { role: \"user\", text: displayText }];"
+    "async function resendFromEdit(editIndex, newText) {\n    if (!newText.trim() || loading) return;\n    const truncated = messages.slice(0, editIndex);\n    const nextMessages = [...truncated, { role: \"user\", text: newText.trim() }];\n    setMessages(nextMessages);\n    setLoading(true);\n    try {\n      const replyText = await askCria(nextMessages, { voice: false, image: null });\n      const parts = (replyText || \"Nao consegui gerar uma resposta agora.\").split(\"|||\").map(p => p.trim()).filter(Boolean);\n      let current = [...nextMessages];\n      for (let i = 0; i < parts.length; i++) {\n        current = [...current, { role: \"assistant\", text: parts[i] }];\n        setMessages(current);\n        if (i < parts.length - 1) await new Promise(r => setTimeout(r, 600 + Math.random() * 500));\n      }\n    } catch (err) {\n      setMessages((prev) => [...prev, { role: \"assistant\", text: \"Deu um problema. Tenta de novo.\" }]);\n    } finally { setLoading(false); }\n  }\n  async function sendMessage(image, overrideText) {\n    const text = (overrideText !== undefined ? overrideText : input).trim();\n    if ((!text && !image) || loading) return;\n    const displayText = text || (image ? \"[imagem]\" : \"\");\n    const nextMessages = [...messages, { role: \"user\", text: displayText }];"
   );
 
   html = html.replace(
