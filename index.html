@@ -21,10 +21,10 @@ iframe{border:0;width:100%;height:100%;position:fixed;inset:0}
   <div class="msg" id="status">iniciando</div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="./patch.js?v=20"></script>
-<script src="./patch-openai.js?v=20"></script>
-<script src="./patch-tone.js?v=20"></script>
-<script src="./patch-persona.js?v=20"></script>
+<script src="./patch.js?v=21"></script>
+<script src="./patch-openai.js?v=21"></script>
+<script src="./patch-tone.js?v=21"></script>
+<script src="./patch-persona.js?v=21"></script>
 <script>
 (function(){
   var boot = document.getElementById('boot');
@@ -52,7 +52,7 @@ iframe{border:0;width:100%;height:100%;position:fixed;inset:0}
       }catch(e){ console.warn('cache clean', e); }
 
       setStatus('baixando app…');
-      var res = await fetch('./cria-github.zip?v=40');
+      var res = await fetch('./cria-github.zip?v=41');
       if(!res.ok) throw new Error('zip HTTP '+res.status);
       var buf = await res.arrayBuffer();
 
