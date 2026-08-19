@@ -21,11 +21,12 @@ iframe{border:0;width:100%;height:100%;position:fixed;inset:0}
   <div class="msg" id="status">iniciando</div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="./patch.js?v=40"></script>
-<script src="./patch-openai.js?v=40"></script>
-<script src="./patch-tone.js?v=40"></script>
-<script src="./patch-persona.js?v=40"></script>
-<script src="./patch-voice.js?v=40"></script>
+<script src="./patch.js?v=41"></script>
+<script src="./patch-openai.js?v=41"></script>
+<script src="./patch-kimi.js?v=41"></script>
+<script src="./patch-tone.js?v=41"></script>
+<script src="./patch-persona.js?v=41"></script>
+<script src="./patch-voice.js?v=41"></script>
 <script>
 (function(){
   var boot = document.getElementById('boot');
@@ -53,7 +54,7 @@ iframe{border:0;width:100%;height:100%;position:fixed;inset:0}
       }catch(e){ console.warn('cache clean', e); }
 
       setStatus('baixando app…');
-      var res = await fetch('./cria-github.zip?v=60');
+      var res = await fetch('./cria-github.zip?v=61');
       if(!res.ok) throw new Error('zip HTTP '+res.status);
       var buf = await res.arrayBuffer();
 
@@ -67,6 +68,7 @@ iframe{border:0;width:100%;height:100%;position:fixed;inset:0}
       setStatus('aplicando melhorias…');
       try{ if(window.CRIA_PATCH) html = window.CRIA_PATCH(html); }catch(e){ console.warn('patch', e); }
       try{ if(window.CRIA_PATCH_OPENAI) html = window.CRIA_PATCH_OPENAI(html); }catch(e){ console.warn('openai', e); }
+      try{ if(window.CRIA_PATCH_KIMI) html = window.CRIA_PATCH_KIMI(html); }catch(e){ console.warn('kimi', e); }
       try{ if(window.CRIA_PATCH_TONE) html = window.CRIA_PATCH_TONE(html); }catch(e){ console.warn('tone', e); }
       try{ if(window.CRIA_PATCH_PERSONA) html = window.CRIA_PATCH_PERSONA(html); }catch(e){ console.warn('persona', e); }
       try{ if(window.CRIA_PATCH_VOICE) html = window.CRIA_PATCH_VOICE(html); }catch(e){ console.warn('voice', e); }
