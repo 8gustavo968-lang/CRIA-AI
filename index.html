@@ -26,20 +26,20 @@ iframe{border:0;width:100%;height:100%;position:fixed;inset:0}
   </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="./patch.js?v=55"></script>
-<script src="./patch-openai.js?v=55"></script>
-<script src="./patch-kimi.js?v=55"></script>
-<script src="./patch-sambanova.js?v=55"></script>
-<script src="./patch-cohere.js?v=55"></script>
-<script src="./patch-editor.js?v=55"></script>
-<script src="./patch-tone.js?v=55"></script>
-<script src="./patch-persona.js?v=55"></script>
-<script src="./patch-history.js?v=55"></script>
-<script src="./patch-composio.js?v=55"></script>
-<script src="./patch-chat-plus.js?v=55"></script>
-<script src="./patch-voice.js?v=55"></script>
-<script src="./patch-mic.js?v=55"></script>
-<script src="./patch-auto-voice.js?v=55"></script>
+<script src="./patch.js?v=60"></script>
+<script src="./patch-openai.js?v=60"></script>
+<script src="./patch-kimi.js?v=60"></script>
+<script src="./patch-sambanova.js?v=60"></script>
+<script src="./patch-cohere.js?v=60"></script>
+<script src="./patch-editor.js?v=60"></script>
+<script src="./patch-tone.js?v=60"></script>
+<script src="./patch-persona.js?v=60"></script>
+<script src="./patch-history.js?v=60"></script>
+<script src="./patch-composio.js?v=60"></script>
+<script src="./patch-voice.js?v=60"></script>
+<script src="./patch-mic.js?v=60"></script>
+<script src="./patch-auto-voice.js?v=60"></script>
+<script src="./patch-chat-plus.js?v=60"></script>
 <script>
 (function(){
   var boot = document.getElementById('boot');
@@ -64,14 +64,12 @@ iframe{border:0;width:100%;height:100%;position:fixed;inset:0}
           var ks = await caches.keys();
           await Promise.all(ks.map(function(k){ return caches.delete(k); }));
         }
-      }catch(e){ console.warn('cache clean', e); }
+      }catch(e){}
 
       setStatus('baixando app…');
-      var res = await fetch('./cria-github.zip?v=75');
+      var res = await fetch('./cria-github.zip?v=80');
       if(!res.ok) throw new Error('zip HTTP '+res.status);
       var buf = await res.arrayBuffer();
-
-      setStatus('abrindo arquivos…');
       if(typeof JSZip === 'undefined') throw new Error('JSZip não carregou');
       var zip = await JSZip.loadAsync(buf);
       var file = zip.file('cria-github/index.html');
@@ -79,27 +77,11 @@ iframe{border:0;width:100%;height:100%;position:fixed;inset:0}
       var html = await file.async('string');
 
       setStatus('aplicando melhorias…');
-      var patches = [
-        ['patch', 'CRIA_PATCH'],
-        ['openai', 'CRIA_PATCH_OPENAI'],
-        ['kimi', 'CRIA_PATCH_KIMI'],
-        ['sambanova', 'CRIA_PATCH_SAMBANOVA'],
-        ['cohere', 'CRIA_PATCH_COHERE'],
-        ['editor', 'CRIA_PATCH_EDITOR'],
-        ['tone', 'CRIA_PATCH_TONE'],
-        ['persona', 'CRIA_PATCH_PERSONA'],
-        ['history', 'CRIA_PATCH_HISTORY'],
-        ['composio', 'CRIA_PATCH_COMPOSIO'],
-        ['chat-plus', 'CRIA_PATCH_CHAT_PLUS'],
-        ['voice', 'CRIA_PATCH_VOICE'],
-        ['mic', 'CRIA_PATCH_MIC'],
-        ['auto-voice', 'CRIA_PATCH_AUTO_VOICE']
-      ];
-      for (var pi = 0; pi < patches.length; pi++) {
+      var names = ['CRIA_PATCH','CRIA_PATCH_OPENAI','CRIA_PATCH_KIMI','CRIA_PATCH_SAMBANOVA','CRIA_PATCH_COHERE','CRIA_PATCH_EDITOR','CRIA_PATCH_TONE','CRIA_PATCH_PERSONA','CRIA_PATCH_HISTORY','CRIA_PATCH_COMPOSIO','CRIA_PATCH_VOICE','CRIA_PATCH_MIC','CRIA_PATCH_AUTO_VOICE','CRIA_PATCH_CHAT_PLUS','CRIA_PATCH_CHAT_PLUS_FIX'];
+      for (var i = 0; i < names.length; i++) {
         try {
-          var fn = window[patches[pi][1]];
-          if (typeof fn === 'function') html = fn(html);
-        } catch (e) { console.warn(patches[pi][0], e); }
+          if (typeof window[names[i]] === 'function') html = window[names[i]](html);
+        } catch (e) { console.warn(names[i], e); }
       }
 
       setStatus('abrindo Cria…');
@@ -109,11 +91,8 @@ iframe{border:0;width:100%;height:100%;position:fixed;inset:0}
       iframe.srcdoc = html;
       iframe.onload = function(){ if(boot) boot.remove(); };
       document.body.appendChild(iframe);
-
-      setTimeout(function(){ if(boot && boot.parentNode) boot.remove(); }, 8000);
-    }catch(err){
-      fail(err);
-    }
+      setTimeout(function(){ if(boot && boot.parentNode) boot.remove(); }, 10000);
+    }catch(err){ fail(err); }
   })();
 })();
 </script>
