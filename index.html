@@ -26,18 +26,19 @@ iframe{border:0;width:100%;height:100%;position:fixed;inset:0}
   </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="./patch.js?v=51"></script>
-<script src="./patch-openai.js?v=51"></script>
-<script src="./patch-kimi.js?v=51"></script>
-<script src="./patch-sambanova.js?v=51"></script>
-<script src="./patch-cohere.js?v=51"></script>
-<script src="./patch-editor.js?v=51"></script>
-<script src="./patch-tone.js?v=51"></script>
-<script src="./patch-persona.js?v=51"></script>
-<script src="./patch-history.js?v=51"></script>
-<script src="./patch-voice.js?v=51"></script>
-<script src="./patch-mic.js?v=51"></script>
-<script src="./patch-auto-voice.js?v=51"></script>
+<script src="./patch.js?v=52"></script>
+<script src="./patch-openai.js?v=52"></script>
+<script src="./patch-kimi.js?v=52"></script>
+<script src="./patch-sambanova.js?v=52"></script>
+<script src="./patch-cohere.js?v=52"></script>
+<script src="./patch-editor.js?v=52"></script>
+<script src="./patch-tone.js?v=52"></script>
+<script src="./patch-persona.js?v=52"></script>
+<script src="./patch-history.js?v=52"></script>
+<script src="./patch-composio.js?v=52"></script>
+<script src="./patch-voice.js?v=52"></script>
+<script src="./patch-mic.js?v=52"></script>
+<script src="./patch-auto-voice.js?v=52"></script>
 <script>
 (function(){
   var boot = document.getElementById('boot');
@@ -65,7 +66,7 @@ iframe{border:0;width:100%;height:100%;position:fixed;inset:0}
       }catch(e){ console.warn('cache clean', e); }
 
       setStatus('baixando app…');
-      var res = await fetch('./cria-github.zip?v=71');
+      var res = await fetch('./cria-github.zip?v=72');
       if(!res.ok) throw new Error('zip HTTP '+res.status);
       var buf = await res.arrayBuffer();
 
@@ -86,6 +87,7 @@ iframe{border:0;width:100%;height:100%;position:fixed;inset:0}
       try{ if(window.CRIA_PATCH_TONE) html = window.CRIA_PATCH_TONE(html); }catch(e){ console.warn('tone', e); }
       try{ if(window.CRIA_PATCH_PERSONA) html = window.CRIA_PATCH_PERSONA(html); }catch(e){ console.warn('persona', e); }
       try{ if(window.CRIA_PATCH_HISTORY) html = window.CRIA_PATCH_HISTORY(html); }catch(e){ console.warn('history', e); }
+      try{ if(window.CRIA_PATCH_COMPOSIO) html = window.CRIA_PATCH_COMPOSIO(html); }catch(e){ console.warn('composio', e); }
       try{ if(window.CRIA_PATCH_VOICE) html = window.CRIA_PATCH_VOICE(html); }catch(e){ console.warn('voice', e); }
       try{ if(window.CRIA_PATCH_MIC) html = window.CRIA_PATCH_MIC(html); }catch(e){ console.warn('mic', e); }
       try{ if(window.CRIA_PATCH_AUTO_VOICE) html = window.CRIA_PATCH_AUTO_VOICE(html); }catch(e){ console.warn('auto-voice', e); }
