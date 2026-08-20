@@ -8,85 +8,57 @@
 <title>Cria</title>
 <style>
 html,body{margin:0;padding:0;height:100%;background:#0F1320;overflow:hidden}
-#boot{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;color:#F2B705;font-family:system-ui;font-size:16px;padding:24px;text-align:center;gap:12px}
-#boot .msg{color:#9AA3B8;font-size:13px}
-#boot .err{color:#ff6b6b;font-size:13px;max-width:340px;word-break:break-word}
 iframe{border:0;width:100%;height:100%;position:fixed;inset:0}
+#boot{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#F2B705;font-family:system-ui;z-index:2;background:#0F1320;gap:10px;padding:20px;text-align:center}
+#boot .err{color:#ff6b6b;font-size:13px;max-width:320px;word-break:break-word}
 </style>
 </head>
 <body>
 <div id="boot">
   <div>✦ Carregando Cria…</div>
-  <div class="msg" id="status">iniciando</div>
+  <div id="st" style="color:#9AA3B8;font-size:13px">preparando</div>
 </div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="./patch.js?v=70"></script>
-<script src="./patch-openai.js?v=70"></script>
-<script src="./patch-kimi.js?v=70"></script>
-<script src="./patch-sambanova.js?v=70"></script>
-<script src="./patch-cohere.js?v=70"></script>
-<script src="./patch-editor.js?v=70"></script>
-<script src="./patch-tone.js?v=70"></script>
-<script src="./patch-persona.js?v=70"></script>
-<script src="./patch-history.js?v=70"></script>
-<script src="./patch-composio.js?v=70"></script>
-<script src="./patch-voice.js?v=70"></script>
-<script src="./patch-mic.js?v=70"></script>
-<script src="./patch-auto-voice.js?v=70"></script>
-<script src="./overlay.js?v=70"></script>
 <script>
 (function(){
   var boot=document.getElementById('boot');
-  var status=document.getElementById('status');
-  function setStatus(t){ if(status) status.textContent=t; }
-  function fail(err){
-    var msg=(err&&err.message)?err.message:String(err);
-    if(boot) boot.innerHTML='<div>✦ Erro</div><div class="err">'+msg+'</div><div class="msg">Aba anonima / limpa cache</div>';
+  var st=document.getElementById('st');
+  function setSt(t){ if(st) st.textContent=t; }
+  function fail(m){ if(boot) boot.innerHTML='<div>✦ Erro</div><div class="err">'+m+'</div><div style="color:#9AA3B8;font-size:12px">Abre em aba anonima / Chrome</div>'; }
+  function b64ToBytes(b64){
+    var bin=atob(b64);
+    var arr=new Uint8Array(bin.length);
+    for(var i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i);
+    return arr;
+  }
+  async function gunzipBytes(bytes){
+    if (typeof DecompressionStream !== 'undefined') {
+      var stream=new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+      return await new Response(stream).text();
+    }
+    throw new Error('Navegador sem DecompressionStream. Usa Chrome/Edge/Firefox recente.');
   }
   (async function(){
     try{
-      setStatus('limpando cache…');
-      try{
-        if('serviceWorker' in navigator){
-          var regs=await navigator.serviceWorker.getRegistrations();
-          for(var i=0;i<regs.length;i++) await regs[i].unregister();
-        }
-        if(window.caches){
-          var ks=await caches.keys();
-          await Promise.all(ks.map(function(k){return caches.delete(k);}));
-        }
-      }catch(e){}
-      setStatus('baixando app…');
-      var res=await fetch('./cria-github.zip?v=90');
-      if(!res.ok) throw new Error('zip HTTP '+res.status);
-      var buf=await res.arrayBuffer();
-      if(typeof JSZip==='undefined') throw new Error('JSZip nao carregou');
-      var zip=await JSZip.loadAsync(buf);
-      var file=zip.file('cria-github/index.html');
-      if(!file) throw new Error('index nao encontrado');
-      var html=await file.async('string');
-      setStatus('aplicando melhorias…');
-      var names=['CRIA_PATCH','CRIA_PATCH_OPENAI','CRIA_PATCH_KIMI','CRIA_PATCH_SAMBANOVA','CRIA_PATCH_COHERE','CRIA_PATCH_EDITOR','CRIA_PATCH_TONE','CRIA_PATCH_PERSONA','CRIA_PATCH_HISTORY','CRIA_PATCH_COMPOSIO','CRIA_PATCH_VOICE','CRIA_PATCH_MIC','CRIA_PATCH_AUTO_VOICE'];
-      for(var i=0;i<names.length;i++){
-        try{ if(typeof window[names[i]]==='function') html=window[names[i]](html); }catch(e){ console.warn(names[i],e); }
-      }
-      // injeta overlay dentro do iframe tambem
-      if(html.indexOf('</body>')>=0){
-        html=html.replace('</body>','<script src="https://8gustavo968-lang.github.io/CRIA-AI/overlay.js?v=70"><\/script></body>');
-      }
-      setStatus('abrindo…');
+      setSt('baixando app (1/2)…');
+      var a=await fetch('./app_b64_a.txt?v=110').then(function(r){ if(!r.ok) throw new Error('b64a '+r.status); return r.text(); });
+      setSt('baixando app (2/2)…');
+      var b=await fetch('./app_b64_b.txt?v=110').then(function(r){ if(!r.ok) throw new Error('b64b '+r.status); return r.text(); });
+      setSt('descompactando…');
+      var bytes=b64ToBytes((a+b).replace(/\s+/g,''));
+      var html=await gunzipBytes(bytes);
+      if(html.indexOf('Cria')<0) throw new Error('app invalido');
+      setSt('abrindo…');
       var iframe=document.createElement('iframe');
       iframe.setAttribute('allow','microphone; camera; autoplay; clipboard-write');
       iframe.title='Cria';
       iframe.srcdoc=html;
       iframe.onload=function(){ if(boot) boot.remove(); };
       document.body.appendChild(iframe);
-      // overlay no parent tambem
-      try{ if(window.__CRIA_OVERLAY__){} else { /* overlay.js already loaded */ } }catch(e){}
-      setTimeout(function(){ if(boot&&boot.parentNode) boot.remove(); },10000);
-    }catch(err){ fail(err); }
+      setTimeout(function(){ if(boot&&boot.parentNode) boot.remove(); }, 15000);
+    }catch(e){ console.error(e); fail(e.message||String(e)); }
   })();
 })();
 </script>
+<script src="./overlay.js?v=110"></script>
 </body>
 </html>
