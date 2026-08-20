@@ -2,7 +2,7 @@ window.CRIA_PATCH_MIC = function(html) {
   try {
     if (html.indexOf('data-cria-mic') >= 0) return html;
 
-    // 0) sendMessage aceita texto forçado (ditado)
+    // sendMessage aceita texto forçado (ditado)
     if (html.indexOf('async function sendMessage(image)') >= 0 && html.indexOf('forcedText') < 0) {
       html = html.replace(
         'async function sendMessage(image) {\n    const text = input.trim();',
@@ -10,7 +10,6 @@ window.CRIA_PATCH_MIC = function(html) {
       );
     }
 
-    // 1) Botão de microfone ao lado do Enviar
     var sendBtn =
       '<button type="submit" style={styles.sendBtn} disabled={loading || !input.trim()}>\n' +
       '          Enviar\n' +
@@ -41,16 +40,35 @@ window.CRIA_PATCH_MIC = function(html) {
       );
     }
 
-    // 2) Estado + função de microfone dentro do ChatView
     var micLogic =
       '  const [listening, setListening] = useState(false);\n' +
       '  const recogRef = useRef(null);\n' +
+      '  function unlockAudio() {\n' +
+      '    try {\n' +
+      '      if (window.speechSynthesis) {\n' +
+      '        var s = new SpeechSynthesisUtterance(".");\n' +
+      '        s.volume = 0.01; s.rate = 2; s.lang = "pt-BR";\n' +
+      '        window.speechSynthesis.speak(s);\n' +
+      '        window.speechSynthesis.cancel();\n' +
+      '      }\n' +
+      '      if (!window.__criaAudioEl) {\n' +
+      '        window.__criaAudioEl = new Audio();\n' +
+      '        window.__criaAudioEl.setAttribute("playsinline", "true");\n' +
+      '      }\n' +
+      '      // tom silencioso pra liberar autoplay\n' +
+      '      window.__criaAudioEl.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQQAAAAAAA==";\n' +
+      '      window.__criaAudioEl.volume = 0.01;\n' +
+      '      window.__criaAudioEl.play().catch(function(){});\n' +
+      '      window.__criaAudioUnlocked = true;\n' +
+      '    } catch (e) {}\n' +
+      '  }\n' +
       '  function toggleMic() {\n' +
       '    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;\n' +
       '    if (!SR) {\n' +
       '      alert("Seu navegador não suporta ditado por voz. Usa Chrome ou Edge.");\n' +
       '      return;\n' +
       '    }\n' +
+      '    unlockAudio();\n' +
       '    if (listening && recogRef.current) {\n' +
       '      try { recogRef.current.stop(); } catch(e) {}\n' +
       '      setListening(false);\n' +
@@ -69,6 +87,7 @@ window.CRIA_PATCH_MIC = function(html) {
       '      var t = (finalText || "").trim();\n' +
       '      if (t) {\n' +
       '        setInput(t);\n' +
+      '        window.__criaFromMic = true;\n' +
       '        setTimeout(function() {\n' +
       '          try { onSend(null, t); } catch(e) {}\n' +
       '        }, 80);\n' +
