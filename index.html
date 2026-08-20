@@ -4,97 +4,23 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"/>
 <meta name="theme-color" content="#0F1320"/>
-<meta name="apple-mobile-web-app-capable" content="yes"/>
-<link rel="manifest" href="manifest.json"/>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <title>Cria</title>
 <style>
 html,body{margin:0;padding:0;height:100%;background:#0F1320;overflow:hidden}
-#boot{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;color:#F2B705;font-family:system-ui;font-size:16px;padding:24px;text-align:center;gap:12px}
-#boot .msg{color:#9AA3B8;font-size:13px;max-width:320px;word-break:break-word}
-#boot .err{color:#ff6b6b;font-size:13px;max-width:340px;word-break:break-word}
-#boot .links{margin-top:8px;display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
-#boot .links a{color:#F2B705;font-size:13px;text-decoration:none;border:1px solid #3A4566;padding:8px 12px;border-radius:999px}
 iframe{border:0;width:100%;height:100%;position:fixed;inset:0}
+#boot{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;color:#F2B705;font-family:system-ui;z-index:1;background:#0F1320}
 </style>
 </head>
 <body>
-<div id="boot">
-  <div>✦ Carregando Cria…</div>
-  <div class="msg" id="status">iniciando</div>
-  <div class="links">
-    <a href="./editor.html">🎞 Editor de vídeo</a>
-  </div>
-</div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="./patch.js?v=61"></script>
-<script src="./patch-openai.js?v=61"></script>
-<script src="./patch-kimi.js?v=61"></script>
-<script src="./patch-sambanova.js?v=61"></script>
-<script src="./patch-cohere.js?v=61"></script>
-<script src="./patch-editor.js?v=61"></script>
-<script src="./patch-tone.js?v=61"></script>
-<script src="./patch-persona.js?v=61"></script>
-<script src="./patch-history.js?v=61"></script>
-<script src="./patch-composio.js?v=61"></script>
-<script src="./patch-voice.js?v=61"></script>
-<script src="./patch-mic.js?v=61"></script>
-<script src="./patch-auto-voice.js?v=61"></script>
-<script src="./patch-chat-plus.js?v=61"></script>
+<div id="boot">✦ Carregando Cria…</div>
+<iframe id="app" src="./app.html?v=100" allow="microphone; camera; autoplay; clipboard-write" title="Cria"></iframe>
 <script>
-(function(){
-  var boot = document.getElementById('boot');
-  var status = document.getElementById('status');
-  function setStatus(t){ if(status) status.textContent = t; }
-  function fail(err){
-    console.error(err);
-    var msg = (err && err.message) ? err.message : String(err);
-    if(boot){
-      boot.innerHTML = '<div>✦ Erro ao carregar</div><div class="err">'+msg+'</div><div class="msg">Tenta limpar o cache ou abrir em aba anônima.</div><div class="links"><a href="./editor.html">🎞 Editor de vídeo</a></div>';
-    }
-  }
-  (async function(){
-    try{
-      setStatus('limpando cache…');
-      try{
-        if('serviceWorker' in navigator){
-          var regs = await navigator.serviceWorker.getRegistrations();
-          for(var i=0;i<regs.length;i++) await regs[i].unregister();
-        }
-        if(window.caches){
-          var ks = await caches.keys();
-          await Promise.all(ks.map(function(k){ return caches.delete(k); }));
-        }
-      }catch(e){}
-
-      setStatus('baixando app…');
-      var res = await fetch('./cria-github.zip?v=81');
-      if(!res.ok) throw new Error('zip HTTP '+res.status);
-      var buf = await res.arrayBuffer();
-      if(typeof JSZip === 'undefined') throw new Error('JSZip não carregou');
-      var zip = await JSZip.loadAsync(buf);
-      var file = zip.file('cria-github/index.html');
-      if(!file) throw new Error('index não encontrado no zip');
-      var html = await file.async('string');
-
-      setStatus('aplicando melhorias…');
-      var names = ['CRIA_PATCH','CRIA_PATCH_OPENAI','CRIA_PATCH_KIMI','CRIA_PATCH_SAMBANOVA','CRIA_PATCH_COHERE','CRIA_PATCH_EDITOR','CRIA_PATCH_TONE','CRIA_PATCH_PERSONA','CRIA_PATCH_HISTORY','CRIA_PATCH_COMPOSIO','CRIA_PATCH_VOICE','CRIA_PATCH_MIC','CRIA_PATCH_AUTO_VOICE','CRIA_PATCH_CHAT_PLUS','CRIA_PATCH_CHAT_PLUS_FIX'];
-      for (var i = 0; i < names.length; i++) {
-        try {
-          if (typeof window[names[i]] === 'function') html = window[names[i]](html);
-        } catch (e) { console.warn(names[i], e); }
-      }
-
-      setStatus('abrindo Cria…');
-      var iframe = document.createElement('iframe');
-      iframe.setAttribute('allow','microphone; camera; autoplay; clipboard-write');
-      iframe.title = 'Cria';
-      iframe.srcdoc = html;
-      iframe.onload = function(){ if(boot) boot.remove(); };
-      document.body.appendChild(iframe);
-      setTimeout(function(){ if(boot && boot.parentNode) boot.remove(); }, 10000);
-    }catch(err){ fail(err); }
-  })();
-})();
+document.getElementById('app').onload=function(){
+  var b=document.getElementById('boot');
+  if(b) b.remove();
+};
+setTimeout(function(){var b=document.getElementById('boot'); if(b) b.remove();},8000);
 </script>
 </body>
 </html>
