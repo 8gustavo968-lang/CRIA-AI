@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<meta name="theme-color" content="#0F1320"/>
+<title>Cria · Editor de Vídeo</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;min-height:100%;background:#0F1320;color:#E8ECF4;font-family:system-ui,-apple-system,sans-serif}
+a{color:#F2B705;text-decoration:none}
+.wrap{max-width:720px;margin:0 auto;padding:20px 16px 48px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px}
+header h1{margin:0;font-size:1.25rem;color:#F2B705;font-weight:700}
+header .back{font-size:.85rem;opacity:.85}
+.card{background:#171C2B;border:1px solid #2A3148;border-radius:14px;padding:16px;margin-bottom:14px}
+.card h2{margin:0 0 10px;font-size:.95rem;color:#9AA3B8;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.drop{border:2px dashed #3A4566;border-radius:12px;padding:28px 16px;text-align:center;cursor:pointer;transition:.15s;background:#121722}
+.drop:hover,.drop.drag{border-color:#F2B705;background:#1A2030}
+.drop p{margin:0;color:#9AA3B8;font-size:.9rem}
+.drop strong{color:#E8ECF4}
+.files{margin-top:12px;display:flex;flex-direction:column;gap:8px}
+.file{display:flex;align-items:center;gap:10px;background:#121722;border-radius:10px;padding:10px 12px;font-size:.88rem}
+.file .name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.file .size{color:#9AA3B8;font-size:.78rem}
+.file button{background:transparent;border:none;color:#ff6b6b;cursor:pointer;font-size:.85rem;padding:4px 6px}
+textarea{width:100%;min-height:90px;resize:vertical;background:#121722;border:1px solid #2A3148;border-radius:10px;color:#E8ECF4;padding:12px;font-size:.95rem;font-family:inherit}
+textarea:focus{outline:none;border-color:#F2B705}
+.hints{margin-top:8px;font-size:.78rem;color:#9AA3B8;line-height:1.45}
+.hints code{background:#121722;padding:1px 5px;border-radius:4px;color:#F2B705}
+.quick{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.quick button{background:#121722;border:1px solid #2A3148;color:#E8ECF4;border-radius:999px;padding:8px 12px;font-size:.8rem;cursor:pointer}
+.quick button:hover{border-color:#F2B705;color:#F2B705}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.btn{flex:1;min-width:140px;background:#F2B705;color:#0F1320;border:none;border-radius:12px;padding:14px 16px;font-size:1rem;font-weight:700;cursor:pointer}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.secondary{background:#2A3148;color:#E8ECF4}
+.status{margin-top:12px;font-size:.88rem;color:#9AA3B8;min-height:1.3em}
+.status.err{color:#ff6b6b}
+.status.ok{color:#6bffb8}
+.progress{margin-top:8px;height:6px;background:#121722;border-radius:99px;overflow:hidden;display:none}
+.progress.on{display:block}
+.progress > i{display:block;height:100%;width:0%;background:#F2B705;transition:width .2s}
+.preview{margin-top:12px;display:none}
+.preview video{width:100%;border-radius:12px;background:#000;max-height:360px}
+.dl{margin-top:10px;display:none}
+.note{font-size:.75rem;color:#6B738A;margin-top:18px;line-height:1.4;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>✦ Cria · Editor</h1>
+    <a class="back" href="./">← Voltar pro chat</a>
+  </header>
+
+  <div class="card">
+    <h2>1. Arquivos</h2>
+    <div class="drop" id="drop">
+      <p><strong>Clique ou arraste</strong> vídeos aqui</p>
+      <p style="margin-top:6px;font-size:.8rem">MP4, MOV, WebM, MKV · processa no seu aparelho</p>
+      <input type="file" id="fileInput" accept="video/*,audio/*" multiple hidden/>
+    </div>
+    <div class="files" id="fileList"></div>
+  </div>
+
+  <div class="card">
+    <h2>2. O que você quer</h2>
+    <textarea id="prompt" placeholder="Ex: junta os dois vídeos e tira o áudio&#10;Ex: corta os primeiros 5 segundos&#10;Ex: deixa 2x mais rápido&#10;Ex: extrai só o áudio"></textarea>
+    <div class="quick">
+      <button type="button" data-q="tira o áudio">🔇 Tirar áudio</button>
+      <button type="button" data-q="junta todos os vídeos">🔗 Juntar todos</button>
+      <button type="button" data-q="corta os primeiros 5 segundos">✂️ Cortar 5s início</button>
+      <button type="button" data-q="acelera 2x">⚡ 2x mais rápido</button>
+      <button type="button" data-q="extrai só o áudio">🎵 Extrair áudio</button>
+      <button type="button" data-q="converte pra gif de 5 segundos">🎞️ GIF 5s</button>
+    </div>
+    <div class="hints">
+      Exemplos que funcionam bem:<br/>
+      <code>tira o áudio</code> · <code>junta os vídeos</code> · <code>corta do segundo 10 ao 30</code> ·
+      <code>acelera 1.5x</code> · <code>extrai o áudio</code> · <code>gif dos primeiros 4 segundos</code>
+    </div>
+  </div>
+
+  <div class="row">
+    <button class="btn" id="runBtn" disabled>Editar vídeo</button>
+    <button class="btn secondary" id="clearBtn">Limpar</button>
+  </div>
+
+  <div class="status" id="status">Envie pelo menos 1 arquivo pra começar.</div>
+  <div class="progress" id="progress"><i id="bar"></i></div>
+
+  <div class="preview" id="preview">
+    <video id="outVideo" controls playsinline></video>
+    <div class="dl">
+      <a class="btn" id="downloadBtn" download="cria-editado.mp4">⬇ Baixar vídeo</a>
+    </div>
+  </div>
+
+  <p class="note">
+    100% no navegador (ffmpeg.wasm). Arquivos não sobem pra nenhum servidor.<br/>
+    Vídeos grandes ou longos podem demorar e usar bastante memória do aparelho.
+  </p>
+</div>
+
+<script type="module">
+import { FFmpeg } from "https://unpkg.com/@ffmpeg/ffmpeg@0.12.15/dist/esm/index.js";
+import { fetchFile, toBlobURL } from "https://unpkg.com/@ffmpeg/util@0.12.2/dist/esm/index.js";
+
+const drop = document.getElementById("drop");
+const fileInput = document.getElementById("fileInput");
+const fileList = document.getElementById("fileList");
+const promptEl = document.getElementById("prompt");
+const runBtn = document.getElementById("runBtn");
+const clearBtn = document.getElementById("clearBtn");
+const statusEl = document.getElementById("status");
+const progress = document.getElementById("progress");
+const bar = document.getElementById("bar");
+const preview = document.getElementById("preview");
+const outVideo = document.getElementById("outVideo");
+const downloadBtn = document.getElementById("downloadBtn");
+
+let files = [];
+let ffmpeg = null;
+let loadingCore = false;
+let lastUrl = null;
+
+function setStatus(msg, type) {
+  statusEl.textContent = msg;
+  statusEl.className = "status" + (type ? " " + type : "");
+}
+
+function fmtSize(n) {
+  if (n < 1024) return n + " B";
+  if (n < 1048576) return (n / 1024).toFixed(1) + " KB";
+  return (n / 1048576).toFixed(1) + " MB";
+}
+
+function renderFiles() {
+  fileList.innerHTML = "";
+  files.forEach((f, i) => {
+    const row = document.createElement("div");
+    row.className = "file";
+    row.innerHTML = `<span class="name">${i + 1}. ${f.name}</span><span class="size">${fmtSize(f.size)}</span>`;
+    const rm = document.createElement("button");
+    rm.textContent = "remover";
+    rm.onclick = () => { files.splice(i, 1); renderFiles(); updateRun(); };
+    row.appendChild(rm);
+    fileList.appendChild(row);
+  });
+  updateRun();
+}
+
+function updateRun() {
+  runBtn.disabled = files.length === 0;
+  if (files.length === 0) setStatus("Envie pelo menos 1 arquivo pra começar.");
+  else setStatus(files.length + " arquivo(s) pronto(s). Escreva o que quer e aperte Editar.");
+}
+
+function addFiles(list) {
+  for (const f of list) {
+    if (!f.type.startsWith("video/") && !f.type.startsWith("audio/")) continue;
+    files.push(f);
+  }
+  renderFiles();
+}
+
+drop.addEventListener("click", () => fileInput.click());
+fileInput.addEventListener("change", () => {
+  addFiles(fileInput.files);
+  fileInput.value = "";
+});
+["dragenter", "dragover"].forEach(ev => {
+  drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add("drag"); });
+});
+["dragleave", "drop"].forEach(ev => {
+  drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove("drag"); });
+});
+drop.addEventListener("drop", e => addFiles(e.dataTransfer.files));
+
+document.querySelectorAll(".quick button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    promptEl.value = btn.getAttribute("data-q");
+  });
+});
+
+clearBtn.addEventListener("click", () => {
+  files = [];
+  promptEl.value = "";
+  renderFiles();
+  preview.style.display = "none";
+  if (lastUrl) URL.revokeObjectURL(lastUrl);
+  lastUrl = null;
+  setStatus("Limpo.");
+});
+
+/** Interpreta texto em português em um plano de edição simples */
+function parsePlan(text, nFiles) {
+  const t = (text || "").toLowerCase().normalize("NFD").replace(/\p{M}/gu, "");
+
+  // extrair áudio
+  if (/extra(i|ir).*audio|so o audio|somente o audio|so audio/.test(t)) {
+    return { op: "extract_audio" };
+  }
+  // gif
+  if (/\bgif\b/.test(t)) {
+    const sec = (t.match(/(\d+[.,]?\d*)\s*s/) || t.match(/(\d+[.,]?\d*)\s*segundo/));
+    const dur = sec ? parseFloat(sec[1].replace(",", ".")) : 5;
+    return { op: "gif", duration: Math.min(Math.max(dur, 1), 12) };
+  }
+  // mute
+  if (/tira(r)? o audio|sem audio|muta|mute|remove(r)? o audio|silencia/.test(t)) {
+    return { op: "mute" };
+  }
+  // speed
+  const sp = t.match(/(?:acelera|velocidade|speed|rapido|rapida)\s*(\d+[.,]?\d*)\s*x?/) ||
+             t.match(/(\d+[.,]?\d*)\s*x\s*(mais rapido|mais rápido)?/) ||
+             t.match(/(\d+[.,]?\d*)\s*vezes/);
+  if (sp || /acelera|mais rapido|2x|1\.5x|1,5x/.test(t)) {
+    let speed = sp ? parseFloat(sp[1].replace(",", ".")) : 2;
+    if (!isFinite(speed) || speed <= 0) speed = 2;
+    speed = Math.min(Math.max(speed, 0.25), 4);
+    return { op: "speed", speed };
+  }
+  // trim range: do segundo X ao Y
+  let m = t.match(/(?:do|de)\s*(?:segundo\s*)?(\d+[.,]?\d*)\s*(?:ao|ate|até|a)\s*(?:segundo\s*)?(\d+[.,]?\d*)/);
+  if (m) {
+    const start = parseFloat(m[1].replace(",", "."));
+    const end = parseFloat(m[2].replace(",", "."));
+    if (end > start) return { op: "trim", start, duration: end - start };
+  }
+  // primeiros N segundos / corta os primeiros
+  m = t.match(/(?:primeiros?|iniciais?)\s*(\d+[.,]?\d*)\s*s/) ||
+      t.match(/corta(?:r)?\s*(?:os\s*)?(?:primeiros?\s*)?(\d+[.,]?\d*)\s*(?:s|seg)/) ||
+      t.match(/(\d+[.,]?\d*)\s*(?:primeiros?\s*)?(?:segundos?)/);
+  if (m && /corta|primeiro|inicia|inicio|início|seg/.test(t)) {
+    const duration = parseFloat(m[1].replace(",", "."));
+    // se for "corta os primeiros N" = remove início, fica o resto → tratado como trim start=N
+    if (/corta(?:r)?\s*(?:os\s*)?primeiros?/.test(t)) {
+      return { op: "trim_from", start: duration };
+    }
+    return { op: "trim", start: 0, duration };
+  }
+  // concat
+  if (/junta|juntar|concat|une|unir|merge|todos/.test(t) && nFiles >= 2) {
+    return { op: "concat" };
+  }
+  if (nFiles >= 2 && !t.trim()) return { op: "concat" };
+  if (!t.trim() && nFiles === 1) return { op: "mute" }; // fallback inútil — pede prompt
+  // default: se 2+ arquivos e mencionou juntar implícito
+  if (nFiles >= 2) return { op: "concat" };
+  return { op: "unknown", raw: text };
+}
+
+async function ensureFFmpeg() {
+  if (ffmpeg && ffmpeg.loaded) return ffmpeg;
+  if (loadingCore) {
+    while (loadingCore) await new Promise(r => setTimeout(r, 200));
+    return ffmpeg;
+  }
+  loadingCore = true;
+  setStatus("Carregando motor de vídeo (1ª vez pode demorar)…");
+  progress.classList.add("on");
+  bar.style.width = "15%";
+  ffmpeg = new FFmpeg();
+  ffmpeg.on("log", ({ message }) => {
+    // console.log(message);
+  });
+  ffmpeg.on("progress", ({ progress: p }) => {
+    const pct = Math.min(99, Math.max(0, Math.round((p || 0) * 100)));
+    bar.style.width = pct + "%";
+  });
+  const base = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm";
+  await ffmpeg.load({
+    coreURL: await toBlobURL(base + "/ffmpeg-core.js", "text/javascript"),
+    wasmURL: await toBlobURL(base + "/ffmpeg-core.wasm", "application/wasm"),
+  });
+  bar.style.width = "30%";
+  loadingCore = false;
+  return ffmpeg;
+}
+
+function extOf(name) {
+  const i = name.lastIndexOf(".");
+  return i >= 0 ? name.slice(i + 1).toLowerCase() : "mp4";
+}
+
+async function writeInputs(ff) {
+  const names = [];
+  for (let i = 0; i < files.length; i++) {
+    const ext = extOf(files[i].name) || "mp4";
+    const name = `in${i}.${ext}`;
+    await ff.writeFile(name, await fetchFile(files[i]));
+    names.push(name);
+  }
+  return names;
+}
+
+async function readOutput(ff, name, mime) {
+  const data = await ff.readFile(name);
+  const blob = new Blob([data.buffer], { type: mime });
+  if (lastUrl) URL.revokeObjectURL(lastUrl);
+  lastUrl = URL.createObjectURL(blob);
+  return { blob, url: lastUrl };
+}
+
+async function runEdit() {
+  if (!files.length) return;
+  const plan = parsePlan(promptEl.value, files.length);
+  if (plan.op === "unknown") {
+    setStatus("Não entendi o pedido. Use os botões ou frases como: tira o áudio, junta os vídeos, corta os primeiros 5 segundos, acelera 2x.", "err");
+    return;
+  }
+
+  runBtn.disabled = true;
+  preview.style.display = "none";
+  progress.classList.add("on");
+  bar.style.width = "5%";
+
+  try {
+    const ff = await ensureFFmpeg();
+    // limpa vfs antiga (best-effort)
+    try {
+      const ls = await ff.listDir("/");
+      for (const e of ls) {
+        if (e.name === "." || e.name === "..") continue;
+        try { await ff.deleteFile(e.name); } catch (_) {}
+      }
+    } catch (_) {}
+
+    setStatus("Preparando arquivos…");
+    const inputs = await writeInputs(ff);
+    bar.style.width = "40%";
+    setStatus("Editando… (" + plan.op + ")");
+
+    let outName = "output.mp4";
+    let mime = "video/mp4";
+    let downloadName = "cria-editado.mp4";
+
+    if (plan.op === "mute") {
+      await ff.exec(["-i", inputs[0], "-an", "-c:v", "copy", outName]);
+    } else if (plan.op === "extract_audio") {
+      outName = "output.mp3";
+      mime = "audio/mpeg";
+      downloadName = "cria-audio.mp3";
+      await ff.exec(["-i", inputs[0], "-vn", "-acodec", "libmp3lame", "-ab", "192k", outName]);
+    } else if (plan.op === "speed") {
+      const s = plan.speed;
+      // setpts para vídeo + atempo em cadeia pro áudio
+      const atempo = [];
+      let rest = s;
+      // atempo só aceita 0.5–2.0 por filtro
+      while (rest > 2.001) { atempo.push("atempo=2.0"); rest /= 2; }
+      while (rest < 0.5 - 1e-6) { atempo.push("atempo=0.5"); rest /= 0.5; }
+      atempo.push("atempo=" + rest.toFixed(3));
+      const afilter = atempo.join(",");
+      await ff.exec([
+        "-i", inputs[0],
+        "-filter_complex", `[0:v]setpts=${(1 / s).toFixed(6)}*PTS[v];[0:a]${afilter}[a]`,
+        "-map", "[v]", "-map", "[a]",
+        "-c:v", "libx264", "-preset", "ultrafast", "-crf", "28",
+        "-c:a", "aac", "-b:a", "128k",
+        outName
+      ]);
+    } else if (plan.op === "trim") {
+      await ff.exec([
+        "-ss", String(plan.start),
+        "-i", inputs[0],
+        "-t", String(plan.duration),
+        "-c", "copy",
+        outName
+      ]);
+    } else if (plan.op === "trim_from") {
+      await ff.exec([
+        "-ss", String(plan.start),
+        "-i", inputs[0],
+        "-c", "copy",
+        outName
+      ]);
+    } else if (plan.op === "concat") {
+      // re-encode pra aceitar formatos diferentes
+      const listContent = inputs.map(n => `file '${n}'`).join("\n");
+      await ff.writeFile("list.txt", listContent);
+      // concat demuxer com re-encode é mais seguro entre codecs diferentes
+      const args = [];
+      inputs.forEach(n => { args.push("-i", n); });
+      const n = inputs.length;
+      let fc = "";
+      for (let i = 0; i < n; i++) fc += `[${i}:v][${i}:a]`;
+      fc += `concat=n=${n}:v=1:a=1[v][a]`;
+      try {
+        await ff.exec([
+          ...args,
+          "-filter_complex", fc,
+          "-map", "[v]", "-map", "[a]",
+          "-c:v", "libx264", "-preset", "ultrafast", "-crf", "28",
+          "-c:a", "aac", "-b:a", "128k",
+          outName
+        ]);
+      } catch (e) {
+        // fallback sem áudio em algum clipe
+        fc = "";
+        for (let i = 0; i < n; i++) fc += `[${i}:v]`;
+        fc += `concat=n=${n}:v=1:a=0[v]`;
+        await ff.exec([
+          ...args,
+          "-filter_complex", fc,
+          "-map", "[v]",
+          "-c:v", "libx264", "-preset", "ultrafast", "-crf", "28",
+          outName
+        ]);
+      }
+    } else if (plan.op === "gif") {
+      outName = "output.gif";
+      mime = "image/gif";
+      downloadName = "cria.gif";
+      await ff.exec([
+        "-i", inputs[0],
+        "-t", String(plan.duration),
+        "-vf", "fps=10,scale=480:-1:flags=lanczos",
+        "-loop", "0",
+        outName
+      ]);
+    }
+
+    bar.style.width = "95%";
+    setStatus("Finalizando…");
+    const { url } = await readOutput(ff, outName, mime);
+    outVideo.src = url;
+    outVideo.style.display = mime.startsWith("video/") || mime === "image/gif" ? "block" : "none";
+    downloadBtn.href = url;
+    downloadBtn.download = downloadName;
+    downloadBtn.textContent = "⬇ Baixar " + downloadName;
+    downloadBtn.parentElement.style.display = "block";
+    preview.style.display = "block";
+    bar.style.width = "100%";
+    setStatus("Pronto! Pode baixar ou assistir abaixo.", "ok");
+  } catch (err) {
+    console.error(err);
+    setStatus("Erro na edição: " + (err.message || String(err)) + " — tente outro formato ou um pedido mais simples.", "err");
+  } finally {
+    runBtn.disabled = files.length === 0;
+    setTimeout(() => progress.classList.remove("on"), 800);
+  }
+}
+
+runBtn.addEventListener("click", runEdit);
+</script>
+</body>
+</html>
