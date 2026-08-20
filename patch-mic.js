@@ -2,6 +2,14 @@ window.CRIA_PATCH_MIC = function(html) {
   try {
     if (html.indexOf('data-cria-mic') >= 0) return html;
 
+    // 0) sendMessage aceita texto forçado (ditado)
+    if (html.indexOf('async function sendMessage(image)') >= 0 && html.indexOf('forcedText') < 0) {
+      html = html.replace(
+        'async function sendMessage(image) {\n    const text = input.trim();',
+        'async function sendMessage(image, forcedText) {\n    const text = (forcedText != null && String(forcedText).trim() ? String(forcedText) : input).trim();'
+      );
+    }
+
     // 1) Botão de microfone ao lado do Enviar
     var sendBtn =
       '<button type="submit" style={styles.sendBtn} disabled={loading || !input.trim()}>\n' +
@@ -27,7 +35,6 @@ window.CRIA_PATCH_MIC = function(html) {
     if (html.indexOf(sendBtn) >= 0) {
       html = html.replace(sendBtn, withMic);
     } else {
-      // fallback mais solto
       html = html.replace(
         /<button type="submit" style=\{styles\.sendBtn\} disabled=\{loading \|\| !input\.trim\(\)\}>\s*Enviar\s*<\/button>/,
         withMic
@@ -35,7 +42,6 @@ window.CRIA_PATCH_MIC = function(html) {
     }
 
     // 2) Estado + função de microfone dentro do ChatView
-    // Funciona tanto no ChatView original quanto no patch de voz
     var micLogic =
       '  const [listening, setListening] = useState(false);\n' +
       '  const recogRef = useRef(null);\n' +
@@ -63,10 +69,9 @@ window.CRIA_PATCH_MIC = function(html) {
       '      var t = (finalText || "").trim();\n' +
       '      if (t) {\n' +
       '        setInput(t);\n' +
-      '        // envia automaticamente pra IA responder em texto\n' +
       '        setTimeout(function() {\n' +
-      '          try { onSend(null); } catch(e) {}\n' +
-      '        }, 120);\n' +
+      '          try { onSend(null, t); } catch(e) {}\n' +
+      '        }, 80);\n' +
       '      }\n' +
       '    };\n' +
       '    recog.onresult = function(ev) {\n' +
@@ -81,7 +86,6 @@ window.CRIA_PATCH_MIC = function(html) {
       '    try { recog.start(); } catch(e) { setListening(false); }\n' +
       '  }\n';
 
-    // Inserir depois de useScreenShare() no ChatView
     if (html.indexOf('const screen = useScreenShare();') >= 0 && html.indexOf('function toggleMic') < 0) {
       html = html.replace(
         'const screen = useScreenShare();',
