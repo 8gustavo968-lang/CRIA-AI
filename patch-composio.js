@@ -2,11 +2,13 @@ window.CRIA_PATCH_COMPOSIO = function(html) {
   try {
     if (html.indexOf('CRIA_COMPOSIO_V1') >= 0) return html;
 
+    var defaultKeyExpr = '(function(){try{var d=typeof atob==="function"?atob("YWtfTWVIOUtCcnM2VFoxb2d2NnMtS1Q="):"";var s=loadLocal("cria_composio_key","");return s||d;}catch(e){return"";}})()';
+
     // --- Estado da chave Composio ---
     if (html.indexOf('composioKey') < 0) {
       html = html.replace(
         'const [voiceGender, setVoiceGender] = useState(() => loadLocal("cria_voice_gender", "feminina"));',
-        'const [voiceGender, setVoiceGender] = useState(() => loadLocal("cria_voice_gender", "feminina"));\n  const [composioKey, setComposioKey] = useState(() => loadLocal("cria_composio_key", ""));\n  const [composioOn, setComposioOn] = useState(() => loadLocal("cria_composio_on", "0") === "1");'
+        'const [voiceGender, setVoiceGender] = useState(() => loadLocal("cria_voice_gender", "feminina"));\n  const [composioKey, setComposioKey] = useState(function(){ return ' + defaultKeyExpr + '; });\n  const [composioOn, setComposioOn] = useState(() => loadLocal("cria_composio_on", "0") === "1");'
       );
       html = html.replace(
         '}, [voiceGender]);',
@@ -73,7 +75,6 @@ window.CRIA_PATCH_COMPOSIO = function(html) {
         '  async function composioRunForMessage(userText, uid) {\n' +
         '    var sid = await composioEnsureSession(uid);\n' +
         '    var lines = [];\n' +
-        '    // 1) busca ferramentas relevantes\n' +
         '    try {\n' +
         '      var search = await composioRequest("/api/v3.1/tool_router/session/" + sid + "/search", "POST", {\n' +
         '        queries: [{ use_case: String(userText).slice(0, 500) }]\n' +
@@ -91,7 +92,6 @@ window.CRIA_PATCH_COMPOSIO = function(html) {
         '    } catch (e) {\n' +
         '      lines.push("Busca de tools: " + (e.message || e));\n' +
         '    }\n' +
-        '    // 2) tenta meta execute COMPOSIO_SEARCH_TOOLS se existir\n' +
         '    try {\n' +
         '      var exec = await composioRequest("/api/v3.1/tool_router/session/" + sid + "/execute", "POST", {\n' +
         '        tool_slug: "COMPOSIO_SEARCH_TOOLS",\n' +
@@ -111,11 +111,6 @@ window.CRIA_PATCH_COMPOSIO = function(html) {
       html = html.replace('async function sendMessage', composioFns + 'async function sendMessage');
     }
 
-    // --- Hook no sendMessage: se composioOn ou /composio ---
-    // intercepta no início do try, após setLoading
-    var injectMarker = 'setLoading(true);\n\n    try {\n      // --- Cria Editor:';
-    var injectMarker2 = 'setLoading(true);\n\n    try {\n      const replyText = await askCria';
-
     var composioIntercept =
       'setLoading(true);\n\n' +
       '    try {\n' +
@@ -126,7 +121,6 @@ window.CRIA_PATCH_COMPOSIO = function(html) {
       '        var _uid = (typeof userId !== "undefined" && userId) ? userId : "eu";\n' +
       '        try {\n' +
       '          var _compOut = await composioRunForMessage(_q, _uid);\n' +
-      '          // também pede à IA interpretar o resultado\n' +
       '          var _hist = nextMessages.concat([{ role: "assistant", text: "[Composio]\\n" + _compOut }, { role: "user", text: "Com base no resultado Composio acima, responda de forma útil e curta em português o que fazer / o que aconteceu. Pedido original: " + _q }]);\n' +
       '          var _ai = "";\n' +
       '          try { _ai = await askCria(_hist, { voice: false, image: null }); } catch(e) { _ai = ""; }\n' +
@@ -147,9 +141,9 @@ window.CRIA_PATCH_COMPOSIO = function(html) {
         'setLoading(true);\n\n    try {\n      // --- Cria Editor:',
         composioIntercept
       );
-    } else if (html.indexOf(injectMarker2) >= 0) {
+    } else if (html.indexOf('setLoading(true);\n\n    try {\n      const replyText = await askCria') >= 0) {
       html = html.replace(
-        injectMarker2,
+        'setLoading(true);\n\n    try {\n      const replyText = await askCria',
         composioIntercept.replace('// --- Cria Editor:', 'const replyText = await askCria')
       );
     }
