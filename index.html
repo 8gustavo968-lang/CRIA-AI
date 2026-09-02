@@ -20,21 +20,21 @@ iframe{border:0;width:100%;height:100%;position:fixed;inset:0}
   <div class="msg" id="status">iniciando</div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="./patch-persona.js?v=112"></script>
-<script src="./patch-tone.js?v=112"></script>
-<script src="./patch.js?v=112"></script>
-<script src="./patch-chat-plus.js?v=112"></script>
-<script src="./patch-history.js?v=112"></script>
-<script src="./patch-voice.js?v=112"></script>
-<script src="./patch-auto-voice.js?v=112"></script>
-<script src="./patch-mic.js?v=112"></script>
-<script src="./patch-files.js?v=112"></script>
-<script src="./patch-openai.js?v=112"></script>
-<script src="./patch-kimi.js?v=112"></script>
-<script src="./patch-cohere.js?v=112"></script>
-<script src="./patch-sambanova.js?v=112"></script>
-<script src="./patch-composio.js?v=112"></script>
-<script src="./patch-editor.js?v=112"></script>
+<script src="./patch-persona.js?v=113"></script>
+<script src="./patch-tone.js?v=113"></script>
+<script src="./patch.js?v=113"></script>
+<script src="./patch-chat-plus.js?v=113"></script>
+<script src="./patch-history.js?v=113"></script>
+<script src="./patch-voice.js?v=113"></script>
+<script src="./patch-auto-voice.js?v=113"></script>
+<script src="./patch-mic.js?v=113"></script>
+<script src="./patch-files.js?v=113"></script>
+<script src="./patch-openai.js?v=113"></script>
+<script src="./patch-kimi.js?v=113"></script>
+<script src="./patch-cohere.js?v=113"></script>
+<script src="./patch-sambanova.js?v=113"></script>
+<script src="./patch-composio.js?v=113"></script>
+<script src="./patch-editor.js?v=113"></script>
 <script>
 (function(){
   var boot=document.getElementById('boot');
@@ -71,17 +71,32 @@ iframe{border:0;width:100%;height:100%;position:fixed;inset:0}
           await Promise.all(ks.map(function(k){return caches.delete(k);}));
         }
       }catch(e){}
-      setStatus('baixando app…');
-      var res=await fetch('./cria-github.zip?v=112');
-      if(!res.ok) throw new Error('zip HTTP '+res.status);
-      var buf=await res.arrayBuffer();
-      if(typeof JSZip==='undefined') throw new Error('JSZip nao carregou');
-      var zip=await JSZip.loadAsync(buf);
-      var file=zip.file('cria-github/index.html');
-      if(!file) throw new Error('index nao encontrado');
-      var html=await file.async('string');
-      setStatus('aplicando patches…');
-      html = applyAllPatches(html);
+
+      var html = null;
+      // tenta app-live.html (já patchado)
+      setStatus('carregando Cria…');
+      try {
+        var r2 = await fetch('./app-live.html?v=113');
+        if (r2.ok) {
+          html = await r2.text();
+          setStatus('app-live ok');
+        }
+      } catch(e) {}
+
+      if (!html) {
+        setStatus('baixando zip…');
+        var res=await fetch('./cria-github.zip?v=113');
+        if(!res.ok) throw new Error('zip HTTP '+res.status);
+        var buf=await res.arrayBuffer();
+        if(typeof JSZip==='undefined') throw new Error('JSZip nao carregou');
+        var zip=await JSZip.loadAsync(buf);
+        var file=zip.file('cria-github/index.html');
+        if(!file) throw new Error('index nao encontrado');
+        html=await file.async('string');
+        setStatus('aplicando patches…');
+        html = applyAllPatches(html);
+      }
+
       setStatus('abrindo…');
       var iframe=document.createElement('iframe');
       iframe.setAttribute('allow','microphone; camera; autoplay; clipboard-write');
@@ -94,6 +109,6 @@ iframe{border:0;width:100%;height:100%;position:fixed;inset:0}
   })();
 })();
 </script>
-<script src="./overlay.js?v=112"></script>
+<script src="./overlay.js?v=113"></script>
 </body>
 </html>
