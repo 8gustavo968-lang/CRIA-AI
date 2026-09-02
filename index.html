@@ -21,20 +21,20 @@ iframe{border:0;width:100%;height:100%;position:fixed;inset:0}
   <div class="msg" id="status">iniciando</div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="./patch-persona.js?v=117"></script>
-<script src="./patch-tone.js?v=117"></script>
-<script src="./patch.js?v=117"></script>
-<script src="./patch-chat-plus.js?v=117"></script>
-<script src="./patch-history.js?v=117"></script>
-<script src="./patch-voice.js?v=117"></script>
-<script src="./patch-auto-voice.js?v=117"></script>
-<script src="./patch-mic.js?v=117"></script>
-<script src="./patch-files.js?v=117"></script>
-<script src="./patch-openai.js?v=117"></script>
-<script src="./patch-kimi.js?v=117"></script>
-<script src="./patch-cohere.js?v=117"></script>
-<script src="./patch-sambanova.js?v=117"></script>
-<script src="./patch-editor.js?v=117"></script>
+<script src="./patch-persona.js?v=118"></script>
+<script src="./patch-tone.js?v=118"></script>
+<script src="./patch-chat-plus.js?v=118"></script>
+<script src="./patch-history.js?v=118"></script>
+<script src="./patch-voice.js?v=118"></script>
+<script src="./patch-auto-voice.js?v=118"></script>
+<script src="./patch-mic.js?v=118"></script>
+<script src="./patch-files.js?v=118"></script>
+<script src="./patch-openai.js?v=118"></script>
+<script src="./patch-kimi.js?v=118"></script>
+<script src="./patch-cohere.js?v=118"></script>
+<script src="./patch-sambanova.js?v=118"></script>
+<script src="./patch-editor.js?v=118"></script>
+<script src="./patch.js?v=118"></script>
 <script>
 (function(){
   var boot=document.getElementById('boot');
@@ -45,11 +45,12 @@ iframe{border:0;width:100%;height:100%;position:fixed;inset:0}
     if(boot) boot.innerHTML='<div>✦ Erro</div><div class="err">'+msg+'</div><div class="msg">Aba anonima / limpa cache</div>';
   }
   function applyAllPatches(html){
-    // composio desativado (quebrava o Babel)
+    // patch.js por ULTIMO (corrige _file + FALLBACK)
     var patches = [
-      'CRIA_PATCH_PERSONA','CRIA_PATCH_TONE','CRIA_PATCH','CRIA_PATCH_CHAT_PLUS','CRIA_PATCH_CHAT_PLUS_FIX',
+      'CRIA_PATCH_PERSONA','CRIA_PATCH_TONE','CRIA_PATCH_CHAT_PLUS','CRIA_PATCH_CHAT_PLUS_FIX',
       'CRIA_PATCH_HISTORY','CRIA_PATCH_VOICE','CRIA_PATCH_AUTO_VOICE','CRIA_PATCH_MIC','CRIA_PATCH_FILES',
-      'CRIA_PATCH_OPENAI','CRIA_PATCH_KIMI','CRIA_PATCH_COHERE','CRIA_PATCH_SAMBANOVA','CRIA_PATCH_EDITOR'
+      'CRIA_PATCH_OPENAI','CRIA_PATCH_KIMI','CRIA_PATCH_COHERE','CRIA_PATCH_SAMBANOVA','CRIA_PATCH_EDITOR',
+      'CRIA_PATCH'
     ];
     for (var i=0;i<patches.length;i++){
       var fn = window[patches[i]];
@@ -57,8 +58,6 @@ iframe{border:0;width:100%;height:100%;position:fixed;inset:0}
         try { html = fn(html); } catch(e){ console.warn(patches[i], e); }
       }
     }
-    // sanitiza qualquer resto de string quebrada com triple-backtick
-    html = html.replace(/lines\.push\("```[\s\S]*?```"\);/g, 'lines.push(JSON.stringify(searchData||{}).slice(0,1800));');
     return html;
   }
   (async function(){
@@ -75,7 +74,7 @@ iframe{border:0;width:100%;height:100%;position:fixed;inset:0}
         }
       }catch(e){}
       setStatus('baixando app…');
-      var res=await fetch('./cria-github.zip?v=117');
+      var res=await fetch('./cria-github.zip?v=118');
       if(!res.ok) throw new Error('zip HTTP '+res.status);
       var buf=await res.arrayBuffer();
       if(typeof JSZip==='undefined') throw new Error('JSZip nao carregou');
@@ -97,6 +96,6 @@ iframe{border:0;width:100%;height:100%;position:fixed;inset:0}
   })();
 })();
 </script>
-<script src="./overlay.js?v=117"></script>
+<script src="./overlay.js?v=118"></script>
 </body>
 </html>
