@@ -20,21 +20,21 @@ iframe{border:0;width:100%;height:100%;position:fixed;inset:0}
   <div class="msg" id="status">iniciando</div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="./patch-persona.js?v=115"></script>
-<script src="./patch-tone.js?v=115"></script>
-<script src="./patch.js?v=115"></script>
-<script src="./patch-chat-plus.js?v=115"></script>
-<script src="./patch-history.js?v=115"></script>
-<script src="./patch-voice.js?v=115"></script>
-<script src="./patch-auto-voice.js?v=115"></script>
-<script src="./patch-mic.js?v=115"></script>
-<script src="./patch-files.js?v=115"></script>
-<script src="./patch-openai.js?v=115"></script>
-<script src="./patch-kimi.js?v=115"></script>
-<script src="./patch-cohere.js?v=115"></script>
-<script src="./patch-sambanova.js?v=115"></script>
-<script src="./patch-composio.js?v=115"></script>
-<script src="./patch-editor.js?v=115"></script>
+<script src="./patch-persona.js?v=116"></script>
+<script src="./patch-tone.js?v=116"></script>
+<script src="./patch.js?v=116"></script>
+<script src="./patch-chat-plus.js?v=116"></script>
+<script src="./patch-history.js?v=116"></script>
+<script src="./patch-voice.js?v=116"></script>
+<script src="./patch-auto-voice.js?v=116"></script>
+<script src="./patch-mic.js?v=116"></script>
+<script src="./patch-files.js?v=116"></script>
+<script src="./patch-openai.js?v=116"></script>
+<script src="./patch-kimi.js?v=116"></script>
+<script src="./patch-cohere.js?v=116"></script>
+<script src="./patch-sambanova.js?v=116"></script>
+<script src="./patch-composio.js?v=116"></script>
+<script src="./patch-editor.js?v=116"></script>
 <script>
 (function(){
   var boot=document.getElementById('boot');
@@ -72,7 +72,7 @@ iframe{border:0;width:100%;height:100%;position:fixed;inset:0}
         }
       }catch(e){}
       setStatus('baixando app…');
-      var res=await fetch('./cria-github.zip?v=115');
+      var res=await fetch('./cria-github.zip?v=116');
       if(!res.ok) throw new Error('zip HTTP '+res.status);
       var buf=await res.arrayBuffer();
       if(typeof JSZip==='undefined') throw new Error('JSZip nao carregou');
@@ -89,11 +89,11 @@ iframe{border:0;width:100%;height:100%;position:fixed;inset:0}
       iframe.srcdoc=html;
       iframe.onload=function(){ if(boot) boot.remove(); };
       document.body.appendChild(iframe);
-      setTimeout(function(){ if(boot&&boot.parentNode) boot.remove(); },10000);
+      setTimeout(function(){ if(boot&&boot.parentNode) boot.remove(); },12000);
     }catch(err){ fail(err); }
   })();
 })();
 </script>
-<script src="./overlay.js?v=115"></script>
+<script src="./overlay.js?v=116"></script>
 </body>
 </html>
