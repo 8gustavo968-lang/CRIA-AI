@@ -1,6 +1,5 @@
 window.CRIA_PATCH = function(html) {
   try {
-    // Multi-mensagens: divide resposta por ||| com pequeno delay
     var oldBlock =
       'const replyText = await askCria(nextMessages, { voice: false, image: image || null });\n' +
       '      const finalMessages = [...nextMessages, { role: "assistant", text: replyText || "Não consegui gerar uma resposta agora. Tenta de novo." }];\n' +
@@ -15,10 +14,10 @@ window.CRIA_PATCH = function(html) {
       '      for (var i = 0; i < parts.length; i++) {\n' +
       '        current = current.concat([{ role: "assistant", text: parts[i] }]);\n' +
       '        setMessages(current);\n' +
-      '        if (i < parts.length - 1) await new Promise(function(r){ setTimeout(r, 550 + Math.random()*450); });\n' +
+      '        if (i < parts.length - 1) await new Promise(function(r){ setTimeout(r, 700 + Math.random()*800); });\n' +
       '      }\n' +
       '      userTurnCountRef.current += 1;\n' +
-      '      if (userTurnCountRef.current % 3 === 0) updateProfile(current);';
+      '      if (userTurnCountRef.current % 2 === 0) updateProfile(current);';
 
     if (html.indexOf(oldBlock) >= 0) {
       html = html.replace(oldBlock, newBlock);
