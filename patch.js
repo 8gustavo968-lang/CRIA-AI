@@ -18,7 +18,7 @@ window.CRIA_PATCH = function(html) {
     if (html.indexOf('recusa_modelo') < 0) {
       html = html.replace(
         'if (text && text.trim()) return text.trim();',
-        'if (text && text.trim()) { var t = text.trim(); var low = t.toLowerCase(); if (/sou ia|nao tenho corpo|não tenho corpo|assistente de ia|sou uma ia|inteligencia artificial/i.test(low)) { lastError = new Error("recusa_modelo"); continue; } return t; }'
+        'if (text && text.trim()) { var t = text.trim(); var low = t.toLowerCase(); if (/sou ia|nao tenho corpo|não tenho corpo|assistente de ia|sou uma ia|inteligencia artificial|como uma ia|não posso ajudar|violat|policy|content policy|não posso continuar/i.test(low)) { lastError = new Error("recusa_modelo"); continue; } return t; }'
       );
     }
 
@@ -34,10 +34,10 @@ window.CRIA_PATCH = function(html) {
       );
     }
 
-    // FALLBACK final (sem cohere fantasma)
+    // FALLBACK sem conectores extras (openai/kimi/cohere/samba removidos)
     html = html.replace(
       /const FALLBACK_ORDER = \[[^\]]+\];/g,
-      'const FALLBACK_ORDER = ["groq", "deepseek", "openrouter", "mistral", "cerebras", "gemini", "openai", "claude"];'
+      'const FALLBACK_ORDER = ["groq", "deepseek", "openrouter", "mistral", "cerebras", "gemini", "claude"];'
     );
 
     // protege PROVIDERS undefined
