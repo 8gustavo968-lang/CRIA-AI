@@ -21,17 +21,15 @@ iframe{border:0;width:100%;height:100%;position:fixed;inset:0}
   <div class="msg" id="status">iniciando</div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="./patch-persona.js?v=122"></script>
-<script src="./patch-apis.js?v=122"></script>
-<script src="./patch-tone.js?v=122"></script>
-<script src="./patch-chat-plus.js?v=122"></script>
-<script src="./patch-history.js?v=122"></script>
-<script src="./patch-voice.js?v=122"></script>
-<script src="./patch-auto-voice.js?v=122"></script>
-<script src="./patch-mic.js?v=122"></script>
-<script src="./patch-files.js?v=122"></script>
-<script src="./patch-editor.js?v=122"></script>
-<script src="./patch.js?v=122"></script>
+<script src="./patch-persona.js?v=123"></script>
+<script src="./patch-apis.js?v=123"></script>
+<script src="./patch-tone.js?v=123"></script>
+<script src="./patch-history.js?v=123"></script>
+<script src="./patch-voice.js?v=123"></script>
+<script src="./patch-auto-voice.js?v=123"></script>
+<script src="./patch-mic.js?v=123"></script>
+<script src="./patch-files.js?v=123"></script>
+<script src="./patch.js?v=123"></script>
 <script>
 (function(){
   var boot=document.getElementById('boot');
@@ -43,9 +41,9 @@ iframe{border:0;width:100%;height:100%;position:fixed;inset:0}
   }
   function applyAllPatches(html){
     var patches = [
-      'CRIA_PATCH_PERSONA','CRIA_PATCH_APIS','CRIA_PATCH_TONE','CRIA_PATCH_CHAT_PLUS','CRIA_PATCH_CHAT_PLUS_FIX',
+      'CRIA_PATCH_PERSONA','CRIA_PATCH_APIS','CRIA_PATCH_TONE',
       'CRIA_PATCH_HISTORY','CRIA_PATCH_VOICE','CRIA_PATCH_AUTO_VOICE','CRIA_PATCH_MIC','CRIA_PATCH_FILES',
-      'CRIA_PATCH_EDITOR','CRIA_PATCH'
+      'CRIA_PATCH'
     ];
     for (var i=0;i<patches.length;i++){
       var fn = window[patches[i]];
@@ -69,7 +67,7 @@ iframe{border:0;width:100%;height:100%;position:fixed;inset:0}
         }
       }catch(e){}
       setStatus('baixando app…');
-      var res=await fetch('./cria-github.zip?v=122');
+      var res=await fetch('./cria-github.zip?v=123');
       if(!res.ok) throw new Error('zip HTTP '+res.status);
       var buf=await res.arrayBuffer();
       if(typeof JSZip==='undefined') throw new Error('JSZip nao carregou — verifique conexão / bloqueador');
@@ -91,6 +89,6 @@ iframe{border:0;width:100%;height:100%;position:fixed;inset:0}
   })();
 })();
 </script>
-<script src="./overlay.js?v=122"></script>
+<script src="./overlay.js?v=123"></script>
 </body>
 </html>
