@@ -34,10 +34,10 @@ window.CRIA_PATCH = function(html) {
       );
     }
 
-    // FALLBACK sem conectores extras (openai/kimi/cohere/samba removidos)
+    // FALLBACK com aion (sem filtro) primeiro
     html = html.replace(
       /const FALLBACK_ORDER = \[[^\]]+\];/g,
-      'const FALLBACK_ORDER = ["groq", "deepseek", "openrouter", "mistral", "cerebras", "gemini", "claude"];'
+      'const FALLBACK_ORDER = ["aion", "groq", "openrouter", "mistral", "cohere", "deepseek", "cerebras", "gemini", "claude"];'
     );
 
     // protege PROVIDERS undefined
