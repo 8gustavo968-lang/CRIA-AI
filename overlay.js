@@ -1,4 +1,4 @@
-/* Cria Overlay UI - fora do React, sempre visivel */
+/* Cria Overlay UI - dark, sem editor, sem conectores */
 (function () {
   if (window.__CRIA_OVERLAY__) return;
   window.__CRIA_OVERLAY__ = true;
@@ -24,17 +24,17 @@
     try { localStorage.setItem(chatsKey(), JSON.stringify(list || [])); } catch (e) {}
   }
 
-  // Floating bar
   var bar = el("div", {
-    position: "fixed", top: "8px", right: "8px", zIndex: "99999",
-    display: "flex", gap: "6px", flexWrap: "wrap", maxWidth: "75vw", justifyContent: "flex-end"
+    position: "fixed", top: "10px", right: "10px", zIndex: "99999",
+    display: "flex", gap: "6px", flexWrap: "wrap", maxWidth: "70vw", justifyContent: "flex-end"
   });
 
   function btn(label, title, onClick) {
     var b = el("button", {
-      minWidth: "42px", minHeight: "42px", borderRadius: "10px",
-      border: "1px solid #3A4566", background: "#1a2035", color: "#F2B705",
-      cursor: "pointer", fontSize: "18px", padding: "0 8px"
+      minWidth: "40px", minHeight: "40px", borderRadius: "12px",
+      border: "1px solid #222636", background: "rgba(11,13,20,0.92)", color: "#f0c014",
+      cursor: "pointer", fontSize: "16px", padding: "0 8px",
+      boxShadow: "0 4px 16px rgba(0,0,0,0.4)", backdropFilter: "blur(8px)"
     }, label);
     b.title = title;
     b.type = "button";
@@ -44,14 +44,15 @@
 
   function modal(title, bodyNode) {
     var mask = el("div", {
-      position: "fixed", inset: "0", background: "rgba(0,0,0,0.6)", zIndex: "100000",
+      position: "fixed", inset: "0", background: "rgba(0,0,0,0.72)", zIndex: "100000",
       display: "flex", alignItems: "center", justifyContent: "center", padding: "16px"
     });
     var box = el("div", {
-      background: "#1a2035", border: "1px solid #3A4566", borderRadius: "16px",
-      padding: "16px", width: "100%", maxWidth: "400px", maxHeight: "80vh", overflowY: "auto", color: "#E8ECF5"
+      background: "#0b0d14", border: "1px solid #222636", borderRadius: "18px",
+      padding: "18px", width: "100%", maxWidth: "400px", maxHeight: "80vh", overflowY: "auto", color: "#e6e8ef",
+      boxShadow: "0 12px 40px rgba(0,0,0,0.55)"
     });
-    var h = el("p", { margin: "0 0 12px", color: "#F2B705", fontWeight: "700", fontSize: "16px" }, title);
+    var h = el("p", { margin: "0 0 12px", color: "#f0c014", fontWeight: "700", fontSize: "16px" }, title);
     box.appendChild(h);
     box.appendChild(bodyNode);
     mask.appendChild(box);
@@ -60,19 +61,18 @@
     return mask;
   }
 
-  // Login
   bar.appendChild(btn("👤", "Login", function () {
     var body = el("div");
     body.innerHTML =
-      '<p style="color:#9AA3B8;font-size:12px;margin:0 0 10px">Login local neste aparelho. PIN opcional.</p>' +
-      '<input id="cria-ov-user" placeholder="usuario" style="width:100%;margin-bottom:8px;padding:10px;border-radius:8px;border:1px solid #3A4566;background:#0F1320;color:#fff;box-sizing:border-box"/>' +
-      '<input id="cria-ov-pin" type="password" placeholder="PIN opcional" style="width:100%;margin-bottom:8px;padding:10px;border-radius:8px;border:1px solid #3A4566;background:#0F1320;color:#fff;box-sizing:border-box"/>' +
+      '<p style="color:#8a92a6;font-size:12px;margin:0 0 10px">Login local neste aparelho. PIN opcional.</p>' +
+      '<input id="cria-ov-user" placeholder="usuario" style="width:100%;margin-bottom:8px;padding:10px;border-radius:10px;border:1px solid #222636;background:#06070c;color:#fff;box-sizing:border-box"/>' +
+      '<input id="cria-ov-pin" type="password" placeholder="PIN opcional" style="width:100%;margin-bottom:8px;padding:10px;border-radius:10px;border:1px solid #222636;background:#06070c;color:#fff;box-sizing:border-box"/>' +
       '<p id="cria-ov-err" style="color:#ff6b6b;font-size:12px;min-height:16px"></p>' +
       '<div style="display:flex;gap:8px">' +
-      '<button id="cria-ov-enter" style="flex:1;padding:10px;border-radius:8px;border:none;background:#F2B705;color:#111;font-weight:700;cursor:pointer">Entrar</button>' +
-      '<button id="cria-ov-out" style="flex:1;padding:10px;border-radius:8px;border:1px solid #3A4566;background:transparent;color:#fff;cursor:pointer">Sair</button>' +
+      '<button id="cria-ov-enter" style="flex:1;padding:10px;border-radius:10px;border:none;background:#f0c014;color:#111;font-weight:700;cursor:pointer">Entrar</button>' +
+      '<button id="cria-ov-out" style="flex:1;padding:10px;border-radius:10px;border:1px solid #222636;background:transparent;color:#fff;cursor:pointer">Sair</button>' +
       '</div>' +
-      '<p style="color:#9AA3B8;font-size:11px;margin-top:10px">Atual: <b style="color:#fff">' + uid() + '</b></p>';
+      '<p style="color:#8a92a6;font-size:11px;margin-top:10px">Atual: <b style="color:#fff">' + uid() + '</b></p>';
     var m = modal("Login", body);
     body.querySelector("#cria-ov-enter").onclick = function () {
       var name = (body.querySelector("#cria-ov-user").value || "").trim().toLowerCase().replace(/[^a-z0-9_\-]/g, "").slice(0, 24);
@@ -86,7 +86,7 @@
         if (!saved && pin) localStorage.setItem(sk, pin);
         setUid(name);
         m.remove();
-        alert("Logado como " + name + ". Recarrega o chat se precisar.");
+        alert("Logado como " + name);
       } catch (e) { err.textContent = String(e.message || e); }
     };
     body.querySelector("#cria-ov-out").onclick = function () {
@@ -95,36 +95,32 @@
     };
   }));
 
-  // Historico
   bar.appendChild(btn("💬", "Historico", function () {
     var body = el("div");
     var list = loadChats();
     if (!list.length) {
-      body.innerHTML = '<p style="color:#9AA3B8;font-size:13px">Nenhuma conversa salva ainda. As mensagens do app principal ficam no historico interno quando disponivel.</p>';
+      body.innerHTML = '<p style="color:#8a92a6;font-size:13px">Nenhuma conversa salva ainda.</p>';
     } else {
       list.forEach(function (c) {
         var row = el("div", {
-          border: "1px solid #2A3148", borderRadius: "12px", padding: "10px", marginBottom: "8px", background: "#0F1320"
+          border: "1px solid #1a1e2b", borderRadius: "12px", padding: "10px", marginBottom: "8px", background: "#06070c"
         });
-        row.innerHTML = '<div style="color:#E8ECF5;font-size:13px">' + (c.title || "Conversa") + '</div>' +
-          '<div style="color:#6b7280;font-size:11px;margin-top:4px">' + (c.updated ? new Date(c.updated).toLocaleString() : "") + '</div>';
+        row.innerHTML = '<div style="color:#e6e8ef;font-size:13px">' + (c.title || "Conversa") + '</div>' +
+          '<div style="color:#6a7288;font-size:11px;margin-top:4px">' + (c.updated ? new Date(c.updated).toLocaleString() : "") + '</div>';
         body.appendChild(row);
       });
     }
     var clear = el("button", {
-      marginTop: "12px", width: "100%", padding: "10px", borderRadius: "8px",
-      border: "1px solid #3A4566", background: "#0F1320", color: "#ff6b6b", cursor: "pointer"
+      marginTop: "12px", width: "100%", padding: "10px", borderRadius: "10px",
+      border: "1px solid #222636", background: "#06070c", color: "#ff6b6b", cursor: "pointer"
     }, "Apagar lista de historico");
     clear.onclick = function () {
-      if (confirm("Apagar historico salvo?")) { saveChats([]); body.innerHTML = "<p style='color:#9AA3B8'>Vazio.</p>"; }
+      if (confirm("Apagar historico salvo?")) { saveChats([]); body.innerHTML = "<p style='color:#8a92a6'>Vazio.</p>"; }
     };
     body.appendChild(clear);
     modal("Historico", body);
   }));
 
-  // Conectores removidos
-
-  // Arquivo
   var fileInput = el("input");
   fileInput.type = "file";
   fileInput.accept = "image/*,.txt,.md,.csv,.json,.log,text/*";
@@ -145,10 +141,10 @@
           var m = d.match(/^data:([^;]+);base64,(.+)$/);
           if (!m) { alert("Falha na imagem"); return; }
           window.__criaPendingFile = { kind: "image", name: f.name, mime: m[1], data: m[2] };
-          alert("Imagem anexada: " + f.name + "\nEscreve a pergunta e envia no chat.");
+          alert("Imagem anexada: " + f.name);
         } else if (isText) {
           window.__criaPendingFile = { kind: "text", name: f.name, text: String(reader.result || "").slice(0, 80000) };
-          alert("Arquivo de texto anexado: " + f.name);
+          alert("Arquivo anexado: " + f.name);
         } else {
           window.__criaPendingFile = { kind: "meta", name: f.name, mime: f.type || "bin", size: f.size };
           alert("Arquivo anexado: " + f.name);
@@ -160,11 +156,6 @@
     else reader.readAsDataURL(f);
   };
   bar.appendChild(btn("📎", "Arquivo", function () { fileInput.click(); }));
-
-  // Editor link
-  bar.appendChild(btn("🎞", "Editor", function () {
-    try { window.top.location.href = "./editor.html"; } catch (e) { window.location.href = "./editor.html"; }
-  }));
 
   function mount() {
     if (!document.body) return setTimeout(mount, 50);
