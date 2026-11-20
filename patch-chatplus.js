@@ -1,13 +1,13 @@
 window.CRIA_PATCH_CHATPLUS = function(html) {
   try {
-    if (html.indexOf('CRIA_CHATPLUS_V135') >= 0) return html;
+    if (html.indexOf('CRIA_CHATPLUS_V136') >= 0) return html;
 
-    if (html.indexOf('CRIA_CHATPLUS_V135') < 0) {
+    if (html.indexOf('CRIA_CHATPLUS_V136') < 0) {
       html = html.replace(
         'const [input, setInput] = useState("");\n  const [loading, setLoading] = useState(false);',
         'const [input, setInput] = useState("");\n' +
         '  const [loading, setLoading] = useState(false);\n' +
-        '  /* CRIA_CHATPLUS_V135 */\n' +
+        '  /* CRIA_CHATPLUS_V136 */\n' +
         '  const [criaPendingFile, setCriaPendingFile] = useState(null);\n' +
         '  const criaFileRef = useRef(null);\n' +
         '  function criaNewChat(){\n' +
@@ -65,15 +65,15 @@ window.CRIA_PATCH_CHATPLUS = function(html) {
 
     if (html.indexOf('criaPendingFile={criaPendingFile}') < 0) {
       html = html.replace(
-        '<ChatView messages={messages} loading={loading} input={input} setInput={setInput} onSend={sendMessage} scrollRef={scrollRef} />',
-        '<ChatView messages={messages} loading={loading} input={input} setInput={setInput} onSend={sendMessage} scrollRef={scrollRef} criaPendingFile={criaPendingFile} setCriaPendingFile={setCriaPendingFile} criaFileRef={criaFileRef} criaOnFilePicked={criaOnFilePicked} />'
+        '<ChatView messages={messages} loading={loading} input={input} setInput={setInput} onSend={sendMessage} scrollRef={scrollRef} voiceGender={voiceGender} elevenKey={elevenKey} elevenVoiceId={elevenVoiceId} />',
+        '<ChatView messages={messages} loading={loading} input={input} setInput={setInput} onSend={sendMessage} scrollRef={scrollRef} voiceGender={voiceGender} elevenKey={elevenKey} elevenVoiceId={elevenVoiceId} criaPendingFile={criaPendingFile} setCriaPendingFile={setCriaPendingFile} criaFileRef={criaFileRef} criaOnFilePicked={criaOnFilePicked} />'
       );
     }
 
-    if (html.indexOf('criaPendingFile, setCriaPendingFile') < 0) {
+    if (html.indexOf('criaOnFilePicked })') < 0) {
       html = html.replace(
-        'function ChatView({ messages, loading, input, setInput, onSend, scrollRef }) {',
-        'function ChatView({ messages, loading, input, setInput, onSend, scrollRef, criaPendingFile, setCriaPendingFile, criaFileRef, criaOnFilePicked }) {'
+        'function ChatView({ messages, loading, input, setInput, onSend, scrollRef, voiceGender, elevenKey, elevenVoiceId }) {',
+        'function ChatView({ messages, loading, input, setInput, onSend, scrollRef, voiceGender, elevenKey, elevenVoiceId, criaPendingFile, setCriaPendingFile, criaFileRef, criaOnFilePicked }) {'
       );
     }
 
@@ -89,43 +89,28 @@ window.CRIA_PATCH_CHATPLUS = function(html) {
     }
 
     if (html.indexOf('CRIA_CHATPLUS_ATTACH') < 0) {
-      var oldNext = 'const nextMessages = [...messages, { role: "user", text }];\n    setMessages(nextMessages);\n    setInput("");';
-      var newNext =
-        'var _attachNote = "";\n' +
-        '    var _imgFromFile = null;\n' +
-        '    if (criaPendingFile) {\n' +
-        '      var _pf2 = criaPendingFile;\n' +
-        '      if (_pf2.kind === "image") {\n' +
-        '        _imgFromFile = { mime: _pf2.mime, data: _pf2.data };\n' +
-        '        text = text + "\\n[arquivo imagem: " + _pf2.name + "]";\n' +
-        '      } else {\n' +
-        '        _attachNote = "\\n\\n[ARQUIVO: " + _pf2.name + "]\\n" + (_pf2.text || "");\n' +
-        '        text = text + "\\n(anexei " + _pf2.name + ")";\n' +
-        '      }\n' +
-        '    }\n' +
-        '    const nextMessages = [...messages, { role: "user", text: text }];\n' +
-        '    setMessages(nextMessages);\n' +
-        '    setInput("");\n' +
-        '    setCriaPendingFile(null);\n' +
-        '    /* CRIA_CHATPLUS_ATTACH */';
-      if (html.indexOf(oldNext) >= 0) {
-        html = html.replace(oldNext, newNext);
-      } else {
+      if (html.indexOf('const nextMessages = [...messages, { role: "user", text }];\n    setMessages(nextMessages);\n    setInput("");') >= 0) {
         html = html.replace(
-          'const nextMessages = [...messages, { role: "user", text }];',
-          'var _attachNote = ""; var _imgFromFile = null;\n' +
-          '    if (criaPendingFile) { var _pf2 = criaPendingFile; if (_pf2.kind === "image") { _imgFromFile = { mime: _pf2.mime, data: _pf2.data }; text = text + "\\n[arquivo imagem: " + _pf2.name + "]"; } else { _attachNote = "\\n\\n[ARQUIVO: " + _pf2.name + "]\\n" + (_pf2.text || ""); text = text + "\\n(anexei " + _pf2.name + ")"; } }\n' +
+          'const nextMessages = [...messages, { role: "user", text }];\n    setMessages(nextMessages);\n    setInput("");',
+          'var _attachNote = "";\n' +
+          '    var _imgFromFile = null;\n' +
+          '    if (criaPendingFile) {\n' +
+          '      var _pf2 = criaPendingFile;\n' +
+          '      if (_pf2.kind === "image") {\n' +
+          '        _imgFromFile = { mime: _pf2.mime, data: _pf2.data };\n' +
+          '        text = text + "\\n[arquivo imagem: " + _pf2.name + "]";\n' +
+          '      } else {\n' +
+          '        _attachNote = "\\n\\n[ARQUIVO: " + _pf2.name + "]\\n" + (_pf2.text || "");\n' +
+          '        text = text + "\\n(anexei " + _pf2.name + ")";\n' +
+          '      }\n' +
+          '    }\n' +
           '    const nextMessages = [...messages, { role: "user", text: text }];\n' +
+          '    setMessages(nextMessages);\n' +
+          '    setInput("");\n' +
+          '    setCriaPendingFile(null);\n' +
           '    /* CRIA_CHATPLUS_ATTACH */'
         );
-        if (html.indexOf('setCriaPendingFile(null)') < 0) {
-          html = html.replace(
-            'setMessages(nextMessages);\n    setInput("");',
-            'setMessages(nextMessages);\n    setInput("");\n    setCriaPendingFile(null);'
-          );
-        }
       }
-
       if (html.indexOf('_attachNote') >= 0) {
         html = html.replace(
           'var _hist = nextMessages;\n      if (_webNote) _hist = nextMessages.concat([{ role: "user", text: "(contexto interno):" + _webNote }]);',
@@ -150,8 +135,9 @@ window.CRIA_PATCH_CHATPLUS = function(html) {
 
     if (html.indexOf('CRIA_FILE_BTN') < 0) {
       html = html.replace(
-        '<button\n          type="button"\n          onClick={() => (screen.sharing ? screen.stop() : screen.start())}',
-        '<input ref={criaFileRef} type="file" accept="*/*" style={{ display: "none" }} onChange={criaOnFilePicked} />\n' +
+        '<form style={styles.inputRow} onSubmit={handleSubmit}>\n        <button\n          type="button"\n          onClick={() => (screen.sharing ? screen.stop() : screen.start())}',
+        '<form style={styles.inputRow} onSubmit={handleSubmit}>\n' +
+        '        <input ref={criaFileRef} type="file" accept="*/*" style={{ display: "none" }} onChange={criaOnFilePicked} />\n' +
         '        <button type="button" onClick={() => criaFileRef && criaFileRef.current && criaFileRef.current.click()} style={styles.screenBtn} title="Anexar arquivo" aria-label="Anexar">{/* CRIA_FILE_BTN */}\ud83d\udcce</button>\n' +
         '        <button\n          type="button"\n          onClick={() => (screen.sharing ? screen.stop() : screen.start())}'
       );
@@ -170,10 +156,12 @@ window.CRIA_PATCH_CHATPLUS = function(html) {
       );
     }
 
-    html = html.replace(
-      'disabled={loading || !input.trim()}',
-      'disabled={loading || (!input.trim() && !criaPendingFile)}'
-    );
+    if (html.indexOf('!criaPendingFile') < 0) {
+      html = html.replace(
+        'disabled={loading || !input.trim()}>\n          Enviar',
+        'disabled={loading || (!input.trim() && !criaPendingFile)}>\n          Enviar'
+      );
+    }
 
   } catch (e) {
     console.warn('CRIA_PATCH_CHATPLUS error', e);
