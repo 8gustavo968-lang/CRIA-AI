@@ -1,11 +1,12 @@
 {
-  "name": "Cria",
+  "name": "Cria AI",
   "short_name": "Cria",
-  "description": "Assistente de IA em portugu\u00eas",
-  "start_url": "./",
+  "description": "Cria — assistente pessoal multi-uso",
+  "start_url": "./?source=pwa",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#0F1320",
-  "theme_color": "#0F1320",
+  "background_color": "#06070c",
+  "theme_color": "#06070c",
   "orientation": "portrait-primary",
   "icons": [
     {

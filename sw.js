@@ -1,17 +1,36 @@
-const CACHE = "cria-v2";
+const CACHE = "cria-shell-v139";
+const ASSETS = ["./", "./index.html", "./manifest.json", "./icon-192.svg", "./icon-512.svg"];
+
 self.addEventListener("install", (e) => {
   e.waitUntil(
-    caches.keys().then((keys) => Promise.all(keys.map((k) => caches.delete(k)))).then(() =>
-      caches.open(CACHE).then((c) => c.addAll(["./index.html", "./manifest.json"]))
-    )
+    caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting())
   );
-  self.skipWaiting();
 });
+
 self.addEventListener("activate", (e) => {
   e.waitUntil(
-    caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))).then(() => self.clients.claim())
+    caches.keys().then((keys) =>
+      Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))
+    ).then(() => self.clients.claim())
   );
 });
+
 self.addEventListener("fetch", (e) => {
-  e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+  if (e.request.method !== "GET") return;
+  const url = new URL(e.request.url);
+  if (/patch-|\.zip|overlay/.test(url.pathname)) {
+    e.respondWith(
+      fetch(e.request)
+        .then((r) => {
+          const clone = r.clone();
+          caches.open(CACHE).then((c) => c.put(e.request, clone)).catch(() => {});
+          return r;
+        })
+        .catch(() => caches.match(e.request))
+    );
+    return;
+  }
+  e.respondWith(
+    caches.match(e.request).then((r) => r || fetch(e.request).catch(() => caches.match("./index.html")))
+  );
 });

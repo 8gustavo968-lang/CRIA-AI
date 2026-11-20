@@ -7,6 +7,11 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <title>Cria</title>
+<link rel="manifest" href="./manifest.json"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<link rel="apple-touch-icon" href="./icon-192.svg"/>
 <style>
 html,body{margin:0;padding:0;height:100%;background:#06070c;overflow:hidden}
 #boot{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;color:#f0c014;font-family:system-ui;font-size:16px;padding:24px;text-align:center;gap:12px;background:radial-gradient(ellipse at center,#12141e 0%,#06070c 70%)}
@@ -21,26 +26,27 @@ iframe{border:0;width:100%;height:100%;position:fixed;inset:0}
   <div class="msg" id="status">iniciando</div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="./patch-persona.js?v=138"></script>
-<script src="./patch-apis.js?v=138"></script>
-<script src="./patch-ui.js?v=138"></script>
-<script src="./patch-notice.js?v=138"></script>
-<script src="./patch-web.js?v=138"></script>
-<script src="./patch-tone.js?v=138"></script>
-<script src="./patch-history.js?v=138"></script>
-<script src="./patch-voice.js?v=138"></script>
-<script src="./patch-auto-voice.js?v=138"></script>
-<script src="./patch-mic.js?v=138"></script>
-<script src="./patch-files.js?v=138"></script>
-<script src="./patch-core.js?v=138"></script>
-<script src="./patch-character.js?v=138"></script>
-<script src="./patch-pro.js?v=138"></script>
-<script src="./patch-ff.js?v=138"></script>
-<script src="./patch-knowledge.js?v=138"></script>
-<script src="./patch-chatplus.js?v=138"></script>
-<script src="./patch-fish-notify.js?v=138"></script>
-<script src="./patch-rotate.js?v=138"></script>
-<script src="./patch.js?v=138"></script>
+<script src="./patch-persona.js?v=139"></script>
+<script src="./patch-apis.js?v=139"></script>
+<script src="./patch-ui.js?v=139"></script>
+<script src="./patch-notice.js?v=139"></script>
+<script src="./patch-web.js?v=139"></script>
+<script src="./patch-tone.js?v=139"></script>
+<script src="./patch-history.js?v=139"></script>
+<script src="./patch-voice.js?v=139"></script>
+<script src="./patch-auto-voice.js?v=139"></script>
+<script src="./patch-mic.js?v=139"></script>
+<script src="./patch-files.js?v=139"></script>
+<script src="./patch-core.js?v=139"></script>
+<script src="./patch-character.js?v=139"></script>
+<script src="./patch-pro.js?v=139"></script>
+<script src="./patch-ff.js?v=139"></script>
+<script src="./patch-knowledge.js?v=139"></script>
+<script src="./patch-chatplus.js?v=139"></script>
+<script src="./patch-fish-notify.js?v=139"></script>
+<script src="./patch-jarvis.js?v=139"></script>
+<script src="./patch-rotate.js?v=139"></script>
+<script src="./patch.js?v=139"></script>
 <script>
 (function(){
   var boot=document.getElementById('boot');
@@ -51,7 +57,7 @@ iframe{border:0;width:100%;height:100%;position:fixed;inset:0}
     if(boot) boot.innerHTML='<div>✦ Erro</div><div class="err">'+msg+'</div><div class="msg">Aba anonima ou Ctrl+Shift+R</div><button onclick="location.reload()" style="margin-top:12px;padding:10px 16px;border-radius:8px;border:none;background:#f0c014;color:#111;font-weight:700;cursor:pointer">Tentar de novo</button>';
   }
   function applyAllPatches(html){
-    var patches = ['CRIA_PATCH_PERSONA','CRIA_PATCH_APIS','CRIA_PATCH_UI','CRIA_PATCH_NOTICE','CRIA_PATCH_WEB','CRIA_PATCH_TONE','CRIA_PATCH_HISTORY','CRIA_PATCH_VOICE','CRIA_PATCH_AUTO_VOICE','CRIA_PATCH_MIC','CRIA_PATCH_FILES','CRIA_PATCH_CORE','CRIA_PATCH_CHARACTER','CRIA_PATCH_PRO','CRIA_PATCH_FF','CRIA_PATCH_KNOWLEDGE','CRIA_PATCH_CHATPLUS','CRIA_PATCH_FISH_NOTIFY','CRIA_PATCH_ROTATE','CRIA_PATCH'];
+    var patches = ['CRIA_PATCH_PERSONA','CRIA_PATCH_APIS','CRIA_PATCH_UI','CRIA_PATCH_NOTICE','CRIA_PATCH_WEB','CRIA_PATCH_TONE','CRIA_PATCH_HISTORY','CRIA_PATCH_VOICE','CRIA_PATCH_AUTO_VOICE','CRIA_PATCH_MIC','CRIA_PATCH_FILES','CRIA_PATCH_CORE','CRIA_PATCH_CHARACTER','CRIA_PATCH_PRO','CRIA_PATCH_FF','CRIA_PATCH_KNOWLEDGE','CRIA_PATCH_CHATPLUS','CRIA_PATCH_FISH_NOTIFY','CRIA_PATCH_JARVIS','CRIA_PATCH_ROTATE','CRIA_PATCH'];
     for (var i=0;i<patches.length;i++){
       var fn = window[patches[i]];
       if (typeof fn === 'function') { try { html = fn(html); } catch(e){ console.warn(patches[i], e); } }
@@ -60,13 +66,14 @@ iframe{border:0;width:100%;height:100%;position:fixed;inset:0}
   }
   (async function(){
     try{
-      setStatus('limpando cache…');
+      setStatus('iniciando…');
       try{
-        if('serviceWorker' in navigator){ var regs=await navigator.serviceWorker.getRegistrations(); for(var i=0;i<regs.length;i++) await regs[i].unregister(); }
-        if(window.caches){ var ks=await caches.keys(); await Promise.all(ks.map(function(k){return caches.delete(k);})); }
+        if('serviceWorker' in navigator){
+          navigator.serviceWorker.register('./sw.js?v=139').catch(function(){});
+        }
       }catch(e){}
       setStatus('baixando app…');
-      var res=await fetch('./cria-github.zip?v=138');
+      var res=await fetch('./cria-github.zip?v=139');
       if(!res.ok) throw new Error('zip HTTP '+res.status);
       var buf=await res.arrayBuffer();
       if(typeof JSZip==='undefined') throw new Error('JSZip nao carregou');
@@ -88,6 +95,6 @@ iframe{border:0;width:100%;height:100%;position:fixed;inset:0}
   })();
 })();
 </script>
-<script src="./overlay.js?v=138"></script>
+<script src="./overlay.js?v=139"></script>
 </body>
 </html>
