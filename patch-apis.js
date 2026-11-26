@@ -14,9 +14,10 @@ window.CRIA_PATCH_APIS = function(html) {
       html = html.replace("const PROVIDERS = {", inject + "const PROVIDERS = {");
     }
 
-    // PROVIDERS — newlines reais
+    // PROVIDERS — com xAI / Grok 4.7
     var newProviders =
       "const PROVIDERS = {\n" +
+      "  xai: { label: \"Grok (xAI)\", needsKey: true, model: \"grok-4.7\", vision: true },\n" +
       "  aion: { label: \"Aion\", needsKey: true, model: \"aion-labs/aion-2.0\", vision: false },\n" +
       "  groq: { label: \"Groq\", needsKey: true, model: \"openai/gpt-oss-120b\", vision: false },\n" +
       "  gemini: { label: \"Gemini\", needsKey: true, model: \"gemini-2.5-flash\", vision: true },\n" +
@@ -30,15 +31,16 @@ window.CRIA_PATCH_APIS = function(html) {
 
     html = html.replace(/const PROVIDERS = \{[\s\S]*?\n\};/, newProviders);
 
-    // FALLBACK — Aion primeiro (sem filtro)
+    // FALLBACK — Grok primeiro quando tiver chave
     html = html.replace(
       /const FALLBACK_ORDER = \[[^\]]+\];/g,
-      'const FALLBACK_ORDER = ["aion", "groq", "openrouter", "mistral", "cohere", "deepseek", "cerebras", "gemini", "claude"];'
+      'const FALLBACK_ORDER = ["xai", "aion", "groq", "openrouter", "mistral", "cohere", "deepseek", "cerebras", "gemini", "claude"];'
     );
 
     // DEFAULT_KEYS
     var newKeys =
       "const DEFAULT_KEYS = {\n" +
+      "  xai: \"\",\n" +
       "  groq: (typeof CRIA_K!=='undefined'?CRIA_K.groq:''),\n" +
       "  gemini: (typeof CRIA_K!=='undefined'?CRIA_K.gemini:''),\n" +
       "  openrouter: (typeof CRIA_K!=='undefined'?CRIA_K.openrouter:''),\n" +
@@ -54,13 +56,21 @@ window.CRIA_PATCH_APIS = function(html) {
     // keys state
     html = html.replace(
       /const \[keys, setKeys\] = useState\(\{[^}]+\}\);/,
-      'const [keys, setKeys] = useState({ groq: "", deepseek: "", openrouter: "", gemini: "", cerebras: "", mistral: "", cohere: "", aion: "" });'
+      'const [keys, setKeys] = useState({ xai: "", groq: "", deepseek: "", openrouter: "", gemini: "", cerebras: "", mistral: "", cohere: "", aion: "" });'
     );
 
-    // callByProviderKey — aion + cohere
-    if (html.indexOf('providerKey === "aion"') < 0) {
+    // callByProviderKey — xai + aion + cohere
+    if (html.indexOf('providerKey === "xai"') < 0) {
       var insert =
-        'if (providerKey === "aion")\n' +
+        'if (providerKey === "xai")\n' +
+        '        return callOpenAICompatible({\n' +
+        '          url: "https://api.x.ai/v1/chat/completions",\n' +
+        '          key: getKey("xai"),\n' +
+        '          model: cfg.model,\n' +
+        '          history,\n' +
+        '          systemPrompt,\n' +
+        '        });\n' +
+        '      if (providerKey === "aion")\n' +
         '        return callOpenAICompatible({\n' +
         '          url: "https://api.aionlabs.ai/v1/chat/completions",\n' +
         '          key: getKey("aion"),\n' +
@@ -84,11 +94,12 @@ window.CRIA_PATCH_APIS = function(html) {
       );
     }
 
-    // UI KeyFields
-    if (html.indexOf("Chave Aion") < 0) {
+    // UI KeyFields — adiciona Grok no topo
+    if (html.indexOf("Chave Grok") < 0 && html.indexOf("Chave xAI") < 0) {
       html = html.replace(
         '<KeyField label="Chave 6 (Mistral)" value={keys.mistral} onChange={(v) => updateKey("mistral", v)} hint="console.mistral.ai" />',
-        '<KeyField label="Chave 6 (Mistral)" value={keys.mistral} onChange={(v) => updateKey("mistral", v)} hint="console.mistral.ai" />\n' +
+        '<KeyField label="Chave Grok (xAI)" value={keys.xai} onChange={(v) => updateKey("xai", v)} hint="console.x.ai → API Keys" />\n' +
+        '            <KeyField label="Chave 6 (Mistral)" value={keys.mistral} onChange={(v) => updateKey("mistral", v)} hint="console.mistral.ai" />\n' +
         '            <KeyField label="Chave Aion (sem filtro)" value={keys.aion} onChange={(v) => updateKey("aion", v)} hint="aionlabs.ai" />\n' +
         '            <KeyField label="Chave Cohere" value={keys.cohere} onChange={(v) => updateKey("cohere", v)} hint="dashboard.cohere.com" />'
       );
